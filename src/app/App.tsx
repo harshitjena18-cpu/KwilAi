@@ -10,7 +10,13 @@ import {
   Clock,
   Flame,
   Apple,
-  Settings
+  Settings,
+  Zap,
+  PlayCircle,
+  LogIn,
+  Sliders,
+  LayoutDashboard,
+  Camera
 } from 'lucide-react';
 import { 
   KwilButton, 
@@ -22,7 +28,13 @@ import {
   KwilSwitch,
   KwilProgress,
   KwilAvatar,
-  KwilBadge
+  KwilBadge,
+  KwilSplash,
+  KwilOnboarding,
+  KwilAuth,
+  KwilPreferences,
+  KwilDashboard,
+  KwilScanner
 } from './components/kwil';
 
 export default function App() {
@@ -38,6 +50,12 @@ export default function App() {
   const tabs = [
     { id: 'components', label: 'Components', icon: <Sparkles size={16} /> },
     { id: 'preview', label: 'Preview', icon: <ChefHat size={16} /> },
+    { id: 'splash', label: 'Splash', icon: <Zap size={16} /> },
+    { id: 'onboarding', label: 'Onboarding', icon: <PlayCircle size={16} /> },
+    { id: 'auth', label: 'Auth', icon: <LogIn size={16} /> },
+    { id: 'preferences', label: 'Preferences', icon: <Sliders size={16} /> },
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
+    { id: 'scanner', label: 'Scanner', icon: <Camera size={16} /> },
   ];
 
   return (
@@ -267,7 +285,7 @@ export default function App() {
                   </KwilCard>
                 </div>
               </>
-            ) : (
+            ) : selectedSection === 'preview' ? (
               <>
                 {/* Preview App Screen */}
                 <div className="space-y-6">
@@ -341,6 +359,36 @@ export default function App() {
                   </div>
                 </div>
               </>
+            ) : selectedSection === 'splash' ? (
+              // Splash Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilSplash />
+              </div>
+            ) : selectedSection === 'onboarding' ? (
+              // Onboarding Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilOnboarding />
+              </div>
+            ) : selectedSection === 'auth' ? (
+              // Auth Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilAuth />
+              </div>
+            ) : selectedSection === 'preferences' ? (
+              // Preferences Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilPreferences />
+              </div>
+            ) : selectedSection === 'dashboard' ? (
+              // Dashboard Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilDashboard />
+              </div>
+            ) : (
+              // Scanner Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilScanner />
+              </div>
             )}
           </div>
         </div>
