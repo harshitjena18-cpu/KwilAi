@@ -16,7 +16,10 @@ import {
   LogIn,
   Sliders,
   LayoutDashboard,
-  Camera
+  Camera,
+  Utensils,
+  FileText,
+  Mic
 } from 'lucide-react';
 import { 
   KwilButton, 
@@ -34,7 +37,10 @@ import {
   KwilAuth,
   KwilPreferences,
   KwilDashboard,
-  KwilScanner
+  KwilScanner,
+  KwilRecipes,
+  KwilRecipeDetail,
+  KwilCookingMode
 } from './components/kwil';
 
 export default function App() {
@@ -56,6 +62,9 @@ export default function App() {
     { id: 'preferences', label: 'Preferences', icon: <Sliders size={16} /> },
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
     { id: 'scanner', label: 'Scanner', icon: <Camera size={16} /> },
+    { id: 'recipes', label: 'Recipes', icon: <Utensils size={16} /> },
+    { id: 'detail', label: 'Recipe Detail', icon: <FileText size={16} /> },
+    { id: 'cooking', label: 'Cooking Mode', icon: <Mic size={16} /> },
   ];
 
   return (
@@ -384,10 +393,25 @@ export default function App() {
               <div className="fixed inset-0" style={{ margin: '-24px' }}>
                 <KwilDashboard />
               </div>
-            ) : (
+            ) : selectedSection === 'scanner' ? (
               // Scanner Screen
               <div className="fixed inset-0" style={{ margin: '-24px' }}>
                 <KwilScanner />
+              </div>
+            ) : selectedSection === 'recipes' ? (
+              // Recipes Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilRecipes />
+              </div>
+            ) : selectedSection === 'detail' ? (
+              // Recipe Detail Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilRecipeDetail />
+              </div>
+            ) : (
+              // Cooking Mode Screen
+              <div className="fixed inset-0" style={{ margin: '-24px' }}>
+                <KwilCookingMode />
               </div>
             )}
           </div>
