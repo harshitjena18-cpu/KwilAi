@@ -4,3 +4,7 @@ export { KwilCard } from './KwilCard';
 export { KwilChip } from './KwilChip';
 export { KwilTabs } from './KwilTabs';
 export { KwilNavBar } from './KwilNavBar';
+export { KwilSwitch } from './KwilSwitch';
+export { KwilProgress } from './KwilProgress';
+export { KwilAvatar } from './KwilAvatar';
+export { KwilBadge } from './KwilBadge';

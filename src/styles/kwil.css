@@ -1,0 +1,118 @@
+/* Kwil AI Design System Custom Styles */
+
+/* Glassmorphism utilities */
+.kwil-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.kwil-glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Neon glow effects */
+.kwil-glow-primary {
+  box-shadow: 0 0 20px rgba(0, 255, 156, 0.3);
+}
+
+.kwil-glow-primary-strong {
+  box-shadow: 0 0 30px rgba(0, 255, 156, 0.5);
+}
+
+.kwil-glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.kwil-glow-mint {
+  box-shadow: 0 0 20px rgba(92, 255, 209, 0.3);
+}
+
+/* Gradient backgrounds */
+.kwil-gradient-primary {
+  background: linear-gradient(135deg, #00FF9C 0%, #10B981 100%);
+}
+
+.kwil-gradient-dark {
+  background: linear-gradient(180deg, #050B08 0%, #0A1410 100%);
+}
+
+/* Holographic effect */
+.kwil-holographic {
+  position: relative;
+  overflow: hidden;
+}
+
+.kwil-holographic::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(0, 255, 156, 0.1) 50%,
+    transparent 70%
+  );
+  animation: holographic-sweep 3s linear infinite;
+}
+
+@keyframes holographic-sweep {
+  0% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%);
+  }
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.kwil-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 255, 156, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 255, 156, 0.6);
+  }
+}
+
+.kwil-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrollbar for dark theme */
+.kwil-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kwil-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.kwil-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 156, 0.3);
+  border-radius: 10px;
+}
+
+.kwil-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 156, 0.5);
+}
