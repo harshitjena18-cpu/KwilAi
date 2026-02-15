@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -10,10 +10,13 @@ import {
   Edit3,
   ArrowRight,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  RotateCw
 } from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilChip } from './KwilChip';
+import { CameraService, compressImage } from '../../../utils/camera';
+import pantryService, { DetectedIngredient } from '../../../services/pantryService';
 
 interface DetectedItem {
   id: string;
@@ -25,29 +28,143 @@ interface DetectedItem {
 
 export default function KwilScanner() {
   const navigate = useNavigate();
-  const [isScanning, setIsScanning] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const cameraServiceRef = useRef<CameraService | null>(null);
+  
+  const [isScanning, setIsScanning] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [flashEnabled, setFlashEnabled] = useState(false);
+  const [error, setError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Simulate detection after scanning
+  // Initialize camera on mount
   useEffect(() => {
-    if (isScanning) {
-      const timer = setTimeout(() => {
-        setIsScanning(false);
-        setDetectedItems([
-          { id: '1', name: 'Tomatoes', confidence: 95, category: 'Vegetables', emoji: '🍅' },
-          { id: '2', name: 'Spinach', confidence: 89, category: 'Leafy Greens', emoji: '🥬' },
-          { id: '3', name: 'Carrots', confidence: 92, category: 'Vegetables', emoji: '🥕' },
-          { id: '4', name: 'Bell Pepper', confidence: 87, category: 'Vegetables', emoji: '🫑' },
-        ]);
-      }, 3000);
-      return () => clearTimeout(timer);
+    const initCamera = async () => {
+      try {
+        cameraServiceRef.current = new CameraService();
+        
+        if (videoRef.current) {
+          await cameraServiceRef.current.startCamera(videoRef.current, {
+            facingMode: 'environment',
+            width: 1280,
+            height: 720,
+          });
+          setIsCameraReady(true);
+        }
+      } catch (err: any) {
+        console.error('Camera initialization error:', err);
+        setError(err.message || 'Failed to access camera');
+      }
+    };
+
+    initCamera();
+
+    // Cleanup on unmount
+    return () => {
+      if (cameraServiceRef.current) {
+        cameraServiceRef.current.stopCamera();
+      }
+    };
+  }, []);
+
+  // Capture and scan photo
+  const handleCapture = async () => {
+    if (!videoRef.current || !cameraServiceRef.current) {
+      setError('Camera not ready');
+      return;
     }
-  }, [isScanning]);
+
+    try {
+      setIsScanning(true);
+      setIsProcessing(true);
+      setError('');
+
+      // Capture photo from video stream
+      const base64Image = cameraServiceRef.current.capturePhoto(videoRef.current, 0.8);
+
+      // Compress image for faster upload
+      const compressedImage = await compressImage(base64Image, 1024, 1024, 0.7);
+
+      // Send to backend for detection
+      const response = await pantryService.scanAndAdd(compressedImage);
+
+      if (response.success && response.detectedItems.length > 0) {
+        // Convert detected items to display format
+        const formattedItems: DetectedItem[] = response.detectedItems.map((item, index) => ({
+          id: index.toString(),
+          name: item.name,
+          confidence: item.confidence,
+          category: getCategoryFromName(item.name),
+          emoji: getEmojiForIngredient(item.name)
+        }));
+
+        setDetectedItems(formattedItems);
+      } else {
+        setError('No ingredients detected. Try a different angle or better lighting.');
+      }
+    } catch (err: any) {
+      console.error('Scanning error:', err);
+      setError(err.response?.data?.message || 'Failed to scan image. Please try again.');
+    } finally {
+      setIsScanning(false);
+      setIsProcessing(false);
+    }
+  };
+
+  // Helper to get category from ingredient name
+  const getCategoryFromName = (name: string): string => {
+    const lowerName = name.toLowerCase();
+    
+    if (['tomato', 'potato', 'onion', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cabbage'].some(v => lowerName.includes(v))) {
+      return 'Vegetables';
+    }
+    if (['apple', 'banana', 'orange', 'grape', 'strawberry', 'mango'].some(f => lowerName.includes(f))) {
+      return 'Fruits';
+    }
+    if (['chicken', 'beef', 'pork', 'fish', 'egg'].some(m => lowerName.includes(m))) {
+      return 'Protein';
+    }
+    if (['milk', 'cheese', 'yogurt', 'butter'].some(d => lowerName.includes(d))) {
+      return 'Dairy';
+    }
+    return 'Other';
+  };
+
+  // Helper to get emoji for ingredient
+  const getEmojiForIngredient = (name: string): string => {
+    const lowerName = name.toLowerCase();
+    
+    const emojiMap: { [key: string]: string } = {
+      tomato: '🍅', potato: '🥔', onion: '🧅', carrot: '🥕', broccoli: '🥦',
+      spinach: '🥬', lettuce: '🥬', cabbage: '🥬', pepper: '🫑',
+      apple: '🍎', banana: '🍌', orange: '🍊', grape: '🍇', strawberry: '🍓',
+      mango: '🥭', pineapple: '🍍', watermelon: '🍉', lemon: '🍋',
+      chicken: '🍗', beef: '🥩', pork: '🥓', fish: '🐟', egg: '🥚',
+      milk: '🥛', cheese: '🧀', yogurt: '🥛', butter: '🧈',
+      rice: '🍚', bread: '🍞', pasta: '🍝', noodle: '🍜',
+    };
+
+    for (const [key, emoji] of Object.entries(emojiMap)) {
+      if (lowerName.includes(key)) return emoji;
+    }
+
+    return '🥘';
+  };
 
   const handleRescan = () => {
     setDetectedItems([]);
-    setIsScanning(true);
+    setError('');
+  };
+
+  const handleSwitchCamera = async () => {
+    if (videoRef.current && cameraServiceRef.current) {
+      try {
+        await cameraServiceRef.current.switchCamera(videoRef.current);
+      } catch (err) {
+        console.error('Failed to switch camera:', err);
+      }
+    }
   };
 
   return (
@@ -65,6 +182,15 @@ export default function KwilScanner() {
           `,
         }}
       >
+        {/* Live Camera Feed */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        
         {/* Simulated camera grain */}
         <div 
           className="absolute inset-0 opacity-10"
@@ -424,6 +550,56 @@ export default function KwilScanner() {
           whileTap={{ scale: 0.9 }}
         >
           <ImageIcon size={24} className="text-white" />
+        </motion.button>
+
+        {/* Capture Button */}
+        <motion.button
+          onClick={handleCapture}
+          disabled={!isCameraReady || isProcessing}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center"
+          style={{
+            background: isCameraReady && !isProcessing 
+              ? 'linear-gradient(135deg, #00FF9C, #00D97E)'
+              : 'rgba(128, 128, 128, 0.5)',
+            border: '4px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 10px 30px rgba(0, 255, 156, 0.5)',
+          }}
+          whileHover={isCameraReady && !isProcessing ? { scale: 1.1 } : {}}
+          whileTap={isCameraReady && !isProcessing ? { scale: 0.9 } : {}}
+          animate={isCameraReady && !isProcessing ? {
+            boxShadow: [
+              '0 10px 30px rgba(0, 255, 156, 0.5)',
+              '0 10px 40px rgba(0, 255, 156, 0.8)',
+              '0 10px 30px rgba(0, 255, 156, 0.5)'
+            ]
+          } : {}}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          {isProcessing ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            >
+              <Sparkles size={32} className="text-white" />
+            </motion.div>
+          ) : (
+            <Camera size={32} className="text-white" />
+          )}
+        </motion.button>
+
+        {/* Switch Camera Button */}
+        <motion.button
+          onClick={handleSwitchCamera}
+          className="absolute bottom-8 left-6 w-14 h-14 rounded-2xl flex items-center justify-center"
+          style={{
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+          }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <RotateCw size={24} className="text-white" />
         </motion.button>
       </div>
 

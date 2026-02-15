@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import connectDB from './src/config/database.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
+import pantryRoutes from './src/routes/pantryRoutes.js';
 import { errorHandler, notFound } from './src/middleware/errorHandler.js';
 
 // Load environment variables
@@ -95,6 +96,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/pantry', pantryRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -113,6 +115,12 @@ app.get('/', (req, res) => {
         profile: 'GET /api/users/profile',
         updateProfile: 'PUT /api/users/profile',
         updatePreferences: 'PUT /api/users/preferences',
+      },
+      pantry: {
+        getItems: 'GET /api/pantry/items',
+        addItem: 'POST /api/pantry/items',
+        updateItem: 'PUT /api/pantry/items/:id',
+        deleteItem: 'DELETE /api/pantry/items/:id',
       }
     }
   });
