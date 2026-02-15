@@ -10,6 +10,7 @@ import connectDB from './src/config/database.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import pantryRoutes from './src/routes/pantryRoutes.js';
+import recipeRoutes from './src/routes/recipeRoutes.js';
 import { errorHandler, notFound } from './src/middleware/errorHandler.js';
 
 // Load environment variables
@@ -97,6 +98,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/pantry', pantryRoutes);
+app.use('/api/recipes', recipeRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -121,6 +123,12 @@ app.get('/', (req, res) => {
         addItem: 'POST /api/pantry/items',
         updateItem: 'PUT /api/pantry/items/:id',
         deleteItem: 'DELETE /api/pantry/items/:id',
+      },
+      recipes: {
+        getRecipes: 'GET /api/recipes',
+        addRecipe: 'POST /api/recipes',
+        updateRecipe: 'PUT /api/recipes/:id',
+        deleteRecipe: 'DELETE /api/recipes/:id',
       }
     }
   });
