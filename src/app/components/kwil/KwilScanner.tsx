@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { 
   X,
   Zap,
@@ -23,6 +24,7 @@ interface DetectedItem {
 }
 
 export default function KwilScanner() {
+  const navigate = useNavigate();
   const [isScanning, setIsScanning] = useState(true);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [flashEnabled, setFlashEnabled] = useState(false);
@@ -573,9 +575,9 @@ export default function KwilScanner() {
                 <span>Edit</span>
               </button>
 
-              <KwilButton variant="primary" className="flex-1">
+              <KwilButton variant="primary" className="flex-1" onClick={() => navigate('/app/recipes')}>
                 <div className="flex items-center justify-center gap-2">
-                  <span>Continue</span>
+                  <span>Find Recipes</span>
                   <ArrowRight size={18} />
                 </div>
               </KwilButton>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { Sparkles, Mail, Lock, Phone, ArrowRight } from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilInput } from './KwilInput';
@@ -7,6 +8,7 @@ import { KwilInput } from './KwilInput';
 export default function KwilAuth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   return (
     <div 
@@ -172,7 +174,7 @@ export default function KwilAuth() {
             </div>
 
             {/* Login Button */}
-            <KwilButton variant="primary" fullWidth>
+            <KwilButton variant="primary" fullWidth onClick={() => navigate('/preferences')}>
               <div className="flex items-center justify-center gap-2">
                 <span>Login</span>
                 <ArrowRight size={20} />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { 
   ArrowLeft,
   Star,
@@ -25,6 +26,7 @@ interface Recipe {
 }
 
 export default function KwilRecipes() {
+  const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState<string[]>(['high-protein']);
 
   const filters = [
@@ -170,6 +172,7 @@ export default function KwilRecipes() {
             }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            onClick={() => navigate(-1)}
           >
             <ArrowLeft size={20} className="text-white" />
           </motion.button>
@@ -249,7 +252,7 @@ export default function KwilRecipes() {
       </motion.div>
 
       {/* Recipe Grid */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6 relative z-10">
+      <div className="flex-1 overflow-y-auto px-6 pb-24 relative z-10">
         <motion.div 
           className="grid grid-cols-2 gap-4"
           initial={{ opacity: 0 }}
@@ -363,6 +366,7 @@ export default function KwilRecipes() {
                     border: '1px solid rgba(0, 255, 156, 0.3)',
                     color: '#00FF9C',
                   }}
+                  onClick={() => navigate(`/app/recipe/${recipe.id}`)}
                 >
                   View Recipe
                 </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { 
   TrendingDown, 
   Dumbbell, 
@@ -108,6 +109,14 @@ export default function KwilPreferences() {
   if (selectedGoals.length > 0) completedSections++;
   if (budget) completedSections++;
   const progress = (completedSections / totalSections) * 100;
+
+  const navigate = useNavigate();
+
+  const handleContinue = () => {
+    // Mark onboarding as complete
+    localStorage.setItem('kwil_onboarding_complete', 'true');
+    navigate('/dashboard');
+  };
 
   return (
     <div 
@@ -437,6 +446,7 @@ export default function KwilPreferences() {
           variant="primary"
           fullWidth
           disabled={progress < 100}
+          onClick={handleContinue}
         >
           <div className="flex items-center justify-center gap-2">
             <span>{progress < 100 ? 'Complete All Sections' : 'Continue'}</span>

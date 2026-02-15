@@ -17,3 +17,4 @@ export { default as KwilScanner } from './KwilScanner';
 export { default as KwilRecipes } from './KwilRecipes';
 export { default as KwilRecipeDetail } from './KwilRecipeDetail';
 export { default as KwilCookingMode } from './KwilCookingMode';
+export { default as KwilHealthDashboard } from './KwilHealthDashboard';

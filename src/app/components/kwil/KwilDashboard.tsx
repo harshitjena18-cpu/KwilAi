@@ -19,7 +19,7 @@ import { KwilCard } from './KwilCard';
 import { KwilChip } from './KwilChip';
 import { KwilAvatar } from './KwilAvatar';
 import { KwilBadge } from './KwilBadge';
-import { KwilNavBar } from './KwilNavBar';
+import { useNavigate } from 'react-router';
 
 interface RecipeCard {
   id: string;
@@ -32,14 +32,7 @@ interface RecipeCard {
 }
 
 export default function KwilDashboard() {
-  const [activeNav, setActiveNav] = useState('home');
-
-  const navItems = [
-    { id: 'home', icon: <ChefHat size={20} />, label: 'Home' },
-    { id: 'scan', icon: <Camera size={20} />, label: 'Scan' },
-    { id: 'recipes', icon: <Sparkles size={20} />, label: 'Recipes' },
-    { id: 'profile', icon: <Users size={20} />, label: 'Profile' },
-  ];
+  const navigate = useNavigate();
 
   const quickActions = [
     { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
@@ -314,7 +307,11 @@ export default function KwilDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <KwilButton variant="primary" fullWidth>
+              <KwilButton 
+                variant="primary" 
+                fullWidth
+                onClick={() => navigate('/app/scanner')}
+              >
                 <div className="flex items-center justify-center gap-2">
                   <Camera size={20} />
                   <span>Scan Ingredients</span>
@@ -438,6 +435,7 @@ export default function KwilDashboard() {
                         border: '1px solid rgba(0, 255, 156, 0.3)',
                         color: '#00FF9C',
                       }}
+                      onClick={() => navigate(`/app/recipe/${recipe.id}`)}
                     >
                       View Recipe
                     </button>
@@ -517,13 +515,6 @@ export default function KwilDashboard() {
           </motion.div>
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      <KwilNavBar 
-        items={navItems} 
-        defaultActive={activeNav}
-        onChange={setActiveNav}
-      />
     </div>
   );
 }

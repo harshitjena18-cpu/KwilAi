@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { Camera, Sparkles, ChefHat, ArrowRight, X } from 'lucide-react';
 import { KwilButton } from './KwilButton';
 
@@ -41,6 +42,8 @@ export default function KwilOnboarding() {
   };
 
   const isLastScreen = currentScreen === screens.length - 1;
+
+  const navigate = useNavigate();
 
   return (
     <div 
@@ -143,7 +146,7 @@ export default function KwilOnboarding() {
         <KwilButton
           variant="primary"
           fullWidth
-          onClick={handleNext}
+          onClick={isLastScreen ? () => navigate('/dashboard') : handleNext}
         >
           <div className="flex items-center justify-center gap-2">
             <span>{isLastScreen ? 'Get Started' : 'Next'}</span>

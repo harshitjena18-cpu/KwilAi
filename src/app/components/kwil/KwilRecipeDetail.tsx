@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { 
   ArrowLeft,
   Heart,
@@ -42,6 +43,7 @@ interface Review {
 }
 
 export default function KwilRecipeDetail() {
+  const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState('steps');
   const [ingredients, setIngredients] = useState<Ingredient[]>([
@@ -138,6 +140,7 @@ export default function KwilRecipeDetail() {
               }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              onClick={() => navigate(-1)}
             >
               <ArrowLeft size={20} className="text-white" />
             </motion.button>
@@ -282,7 +285,7 @@ export default function KwilRecipeDetail() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
+      <div className="flex-1 overflow-y-auto px-6 pb-24">
         <AnimatePresence mode="wait">
           {activeTab === 'ingredients' && (
             <motion.div
@@ -557,7 +560,10 @@ export default function KwilRecipeDetail() {
         }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        initial={{ scale: 0, rotate: -180 }}
         animate={{
+          scale: 1,
+          rotate: 0,
           boxShadow: [
             '0 0 40px rgba(0, 255, 156, 0.6), 0 8px 16px rgba(0, 0, 0, 0.3)',
             '0 0 60px rgba(0, 255, 156, 0.8), 0 8px 16px rgba(0, 0, 0, 0.3)',
@@ -565,13 +571,10 @@ export default function KwilRecipeDetail() {
           ],
         }}
         transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
+          scale: { delay: 0.5, type: 'spring', damping: 10 },
+          rotate: { delay: 0.5, type: 'spring', damping: 10 },
+          boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
         }}
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ delay: 0.5, type: 'spring', damping: 10 }}
       >
         <Mic size={28} className="text-[#050B08]" strokeWidth={2.5} />
       </motion.button>
