@@ -25,6 +25,11 @@ export class CameraService {
     try {
       this.videoElement = videoElement;
 
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.');
+      }
+
       // Request camera access
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -37,10 +42,39 @@ export class CameraService {
 
       // Attach stream to video element
       videoElement.srcObject = this.stream;
-      await videoElement.play();
-    } catch (error) {
+      
+      // Wait for video to be ready
+      await new Promise<void>((resolve, reject) => {
+        videoElement.onloadedmetadata = () => {
+          videoElement.play()
+            .then(() => resolve())
+            .catch(reject);
+        };
+        videoElement.onerror = () => reject(new Error('Video element error'));
+        
+        // Timeout after 10 seconds
+        setTimeout(() => reject(new Error('Camera loading timeout')), 10000);
+      });
+
+    } catch (error: any) {
       console.error('Camera access error:', error);
-      throw new Error('Unable to access camera. Please grant camera permissions.');
+      
+      // Provide specific error messages based on error type
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        throw new Error('Camera permission denied. Please allow camera access in your browser settings and reload the page.');
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        throw new Error('No camera found on this device. Please ensure your device has a camera.');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        throw new Error('Camera is already in use by another application. Please close other apps using the camera and try again.');
+      } else if (error.name === 'OverconstrainedError') {
+        throw new Error('Camera settings not supported. Trying with default settings...');
+      } else if (error.name === 'SecurityError') {
+        throw new Error('Camera access blocked by security settings. Please use HTTPS or check your browser security settings.');
+      } else if (error.message) {
+        throw error;
+      } else {
+        throw new Error('Unable to access camera. Please check your browser permissions and try again.');
+      }
     }
   }
 
@@ -98,6 +132,24 @@ export class CameraService {
       return devices.some((device) => device.kind === 'videoinput');
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Check camera permission status
+   */
+  static async checkCameraPermission(): Promise<'granted' | 'denied' | 'prompt'> {
+    try {
+      // Check if Permissions API is supported
+      if (!navigator.permissions) {
+        return 'prompt';
+      }
+
+      const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      return result.state as 'granted' | 'denied' | 'prompt';
+    } catch {
+      // If permissions API not supported, assume prompt
+      return 'prompt';
     }
   }
 

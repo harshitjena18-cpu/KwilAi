@@ -1,21 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router';
-import { 
-  X,
-  Zap,
-  Image as ImageIcon,
-  Camera,
-  Check,
-  Edit3,
-  ArrowRight,
-  Sparkles,
-  AlertCircle,
-  RotateCw
-} from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilChip } from './KwilChip';
-import { CameraService, compressImage } from '../../../utils/camera';
+import { CameraService, compressImage, fileToBase64 } from '../../../utils/camera';
 import pantryService, { DetectedIngredient } from '../../../services/pantryService';
 
 interface DetectedItem {
@@ -30,6 +15,7 @@ export default function KwilScanner() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const cameraServiceRef = useRef<CameraService | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isScanning, setIsScanning] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -37,28 +23,24 @@ export default function KwilScanner() {
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const [cameraInitialized, setCameraInitialized] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt'>('prompt');
 
-  // Initialize camera on mount
+  // Check camera permission on mount
   useEffect(() => {
-    const initCamera = async () => {
-      try {
-        cameraServiceRef.current = new CameraService();
-        
-        if (videoRef.current) {
-          await cameraServiceRef.current.startCamera(videoRef.current, {
-            facingMode: 'environment',
-            width: 1280,
-            height: 720,
-          });
-          setIsCameraReady(true);
-        }
-      } catch (err: any) {
-        console.error('Camera initialization error:', err);
-        setError(err.message || 'Failed to access camera');
+    const checkPermission = async () => {
+      const status = await CameraService.checkCameraPermission();
+      setPermissionStatus(status);
+      
+      // If permission was previously denied, show instructions immediately
+      if (status === 'denied') {
+        setShowPermissionPrompt(true);
+        setError('Camera access was previously denied. Please enable it in your browser settings.');
       }
     };
 
-    initCamera();
+    checkPermission();
 
     // Cleanup on unmount
     return () => {
@@ -67,6 +49,55 @@ export default function KwilScanner() {
       }
     };
   }, []);
+
+  // Initialize camera when user clicks enable button
+  const handleEnableCamera = async () => {
+    try {
+      setError('');
+      
+      // Check permission status first
+      const status = await CameraService.checkCameraPermission();
+      setPermissionStatus(status);
+      
+      // If already denied, don't try again - show instructions
+      if (status === 'denied') {
+        setShowPermissionPrompt(true);
+        setError('Camera access is blocked. Follow the instructions below to enable it.');
+        return;
+      }
+
+      setShowPermissionPrompt(false);
+      cameraServiceRef.current = new CameraService();
+      
+      if (videoRef.current) {
+        await cameraServiceRef.current.startCamera(videoRef.current, {
+          facingMode: 'environment',
+          width: 1280,
+          height: 720,
+        });
+        setIsCameraReady(true);
+        setCameraInitialized(true);
+        setPermissionStatus('granted');
+      }
+    } catch (err: any) {
+      console.error('Camera initialization error:', err);
+      const errorMessage = err.message || 'Failed to access camera';
+      setError(errorMessage);
+      
+      // Show permission prompt for permission denied errors
+      if (errorMessage.includes('permission') || errorMessage.includes('denied')) {
+        setShowPermissionPrompt(true);
+        setPermissionStatus('denied');
+      }
+    }
+  };
+
+  // Retry camera access
+  const handleRetryCamera = () => {
+    setError('');
+    setShowPermissionPrompt(false);
+    window.location.reload();
+  };
 
   // Capture and scan photo
   const handleCapture = async () => {
@@ -163,6 +194,51 @@ export default function KwilScanner() {
         await cameraServiceRef.current.switchCamera(videoRef.current);
       } catch (err) {
         console.error('Failed to switch camera:', err);
+      }
+    }
+  };
+
+  // Handle file upload from gallery
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsScanning(true);
+      setIsProcessing(true);
+      setError('');
+
+      // Convert file to base64
+      const base64Image = await fileToBase64(file);
+
+      // Compress image
+      const compressedImage = await compressImage(base64Image, 1024, 1024, 0.7);
+
+      // Send to backend for detection
+      const response = await pantryService.scanAndAdd(compressedImage);
+
+      if (response.success && response.detectedItems.length > 0) {
+        const formattedItems: DetectedItem[] = response.detectedItems.map((item, index) => ({
+          id: index.toString(),
+          name: item.name,
+          confidence: item.confidence,
+          category: getCategoryFromName(item.name),
+          emoji: getEmojiForIngredient(item.name)
+        }));
+
+        setDetectedItems(formattedItems);
+      } else {
+        setError('No ingredients detected. Try a different image.');
+      }
+    } catch (err: any) {
+      console.error('Upload scanning error:', err);
+      setError(err.response?.data?.message || 'Failed to scan image. Please try again.');
+    } finally {
+      setIsScanning(false);
+      setIsProcessing(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -783,6 +859,220 @@ export default function KwilScanner() {
             </motion.div>
             <span className="text-[#00FF9C] text-sm font-medium">AI Processing...</span>
           </div>
+        </motion.div>
+      )}
+
+      {/* Permission Prompt */}
+      {showPermissionPrompt && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="mx-6 p-8 rounded-3xl max-w-sm"
+            style={{
+              background: 'rgba(5, 11, 8, 0.98)',
+              backdropFilter: 'blur(20px)',
+              border: '2px solid rgba(255, 107, 107, 0.3)',
+              boxShadow: '0 20px 60px rgba(255, 107, 107, 0.3)',
+            }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 20 }}
+          >
+            <div className="flex flex-col items-center text-center space-y-6">
+              {/* Icon */}
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{
+                  background: 'rgba(255, 107, 107, 0.1)',
+                  border: '2px solid rgba(255, 107, 107, 0.3)',
+                }}
+              >
+                <AlertCircle size={48} className="text-[#FF6B6B]" />
+              </div>
+
+              {/* Title */}
+              <h3 className="text-white font-bold text-2xl">
+                Camera Access Required
+              </h3>
+
+              {/* Message */}
+              <p className="text-[#A0A0A0] text-sm leading-relaxed">
+                {error}
+              </p>
+
+              {/* Instructions */}
+              <div
+                className="w-full p-4 rounded-xl text-left space-y-2"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <p className="text-white text-xs font-semibold">How to enable:</p>
+                <ol className="text-[#A0A0A0] text-xs space-y-1 list-decimal list-inside">
+                  <li>Click the camera icon in your browser's address bar</li>
+                  <li>Select "Allow" for camera permissions</li>
+                  <li>Reload the page</li>
+                </ol>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => navigate('/app')}
+                  className="flex-1 py-3 rounded-full font-medium transition-all"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#A0A0A0',
+                  }}
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={handleRetryCamera}
+                  className="flex-1 py-3 rounded-full font-medium transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #00FF9C, #00D97E)',
+                    color: 'white',
+                    boxShadow: '0 4px 15px rgba(0, 255, 156, 0.3)',
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Error Message Overlay (for non-permission errors) */}
+      {error && !showPermissionPrompt && (
+        <motion.div
+          className="absolute bottom-[420px] left-1/2 -translate-x-1/2 px-6 py-4 rounded-2xl z-30 max-w-sm mx-6"
+          style={{
+            background: 'rgba(255, 107, 107, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 8px 24px rgba(255, 107, 107, 0.4)',
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-white text-sm font-medium">{error}</p>
+            </div>
+            <button
+              onClick={() => setError('')}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Enable Camera Button - Shows when camera not initialized */}
+      {!cameraInitialized && !showPermissionPrompt && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="mx-6 p-8 rounded-3xl max-w-sm text-center"
+            style={{
+              background: 'rgba(5, 11, 8, 0.98)',
+              backdropFilter: 'blur(20px)',
+              border: '2px solid rgba(0, 255, 156, 0.3)',
+              boxShadow: '0 20px 60px rgba(0, 255, 156, 0.3)',
+            }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 20 }}
+          >
+            <div className="flex flex-col items-center space-y-6">
+              {/* Icon */}
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center"
+                style={{
+                  background: 'rgba(0, 255, 156, 0.1)',
+                  border: '3px solid rgba(0, 255, 156, 0.3)',
+                }}
+              >
+                <Camera size={56} className="text-[#00FF9C]" />
+              </div>
+
+              {/* Title */}
+              <div>
+                <h3 className="text-white font-bold text-2xl mb-2">
+                  AI Ingredient Scanner
+                </h3>
+                <p className="text-[#A0A0A0] text-sm leading-relaxed">
+                  Tap the button below to activate your camera and start scanning ingredients with AI-powered detection.
+                </p>
+              </div>
+
+              {/* Features */}
+              <div
+                className="w-full p-4 rounded-xl text-left space-y-3"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0, 255, 156, 0.2)' }}>
+                    <Sparkles size={16} className="text-[#00FF9C]" />
+                  </div>
+                  <p className="text-white text-xs">AI-powered recognition</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0, 255, 156, 0.2)' }}>
+                    <Check size={16} className="text-[#00FF9C]" />
+                  </div>
+                  <p className="text-white text-xs">Instant pantry updates</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0, 255, 156, 0.2)' }}>
+                    <Zap size={16} className="text-[#00FF9C]" />
+                  </div>
+                  <p className="text-white text-xs">Smart recipe matching</p>
+                </div>
+              </div>
+
+              {/* Enable Button */}
+              <motion.button
+                onClick={handleEnableCamera}
+                className="w-full py-4 rounded-full font-bold text-lg transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #00FF9C, #00D97E)',
+                  color: '#050B08',
+                  boxShadow: '0 8px 24px rgba(0, 255, 156, 0.4)',
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Enable Camera
+              </motion.button>
+
+              {/* Skip Button */}
+              <button
+                onClick={() => navigate('/app')}
+                className="text-[#A0A0A0] text-sm hover:text-white transition-colors"
+              >
+                Skip for now
+              </button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </div>

@@ -300,7 +300,12 @@ class RecipeService {
     return recipes.map(recipe => {
       let score = recipe.healthScore || 50;
 
-      // Boost score for matching ingredients
+      // ========================================
+      // ENHANCED RANKING LOGIC
+      // ========================================
+
+      // 1. INGREDIENT MATCH PERCENTAGE (0-30 points)
+      // Higher score for better ingredient matches
       if (ingredients.length > 0 && recipe.ingredients) {
         const matchedIngredients = recipe.ingredients.filter(ing =>
           ingredients.some(userIng => 
@@ -309,32 +314,145 @@ class RecipeService {
           )
         ).length;
 
-        score += (matchedIngredients / ingredients.length) * 20;
+        const ingredientMatchPercentage = matchedIngredients / Math.max(ingredients.length, 1);
+        const ingredientScore = ingredientMatchPercentage * 30; // Up to 30 points
+        score += ingredientScore;
+
+        // Store match percentage for debugging
+        recipe.ingredientMatchPercentage = Math.round(ingredientMatchPercentage * 100);
       }
 
-      // Boost for health goals
+      // 2. HEALTH GOAL SCORING
+      const nutrition = recipe.nutrition || {};
+      const caloriesPerServing = nutrition.calories ? nutrition.calories / (recipe.servings || 1) : null;
+      const proteinPerServing = nutrition.protein ? nutrition.protein / (recipe.servings || 1) : null;
+
+      // WEIGHT LOSS: Prioritize low-calorie recipes (0-25 points)
+      if (healthGoal === 'weight-loss' && caloriesPerServing) {
+        if (caloriesPerServing < 300) {
+          score += 25; // Excellent for weight loss
+        } else if (caloriesPerServing < 400) {
+          score += 20; // Good for weight loss
+        } else if (caloriesPerServing < 500) {
+          score += 15; // Moderate for weight loss
+        } else if (caloriesPerServing < 600) {
+          score += 10; // Acceptable
+        }
+        // Over 600 calories: no bonus
+      }
+
+      // MUSCLE GAIN: Prioritize high-protein recipes (0-25 points)
+      if (healthGoal === 'muscle-gain' && proteinPerServing) {
+        if (proteinPerServing >= 40) {
+          score += 25; // Excellent for muscle gain
+        } else if (proteinPerServing >= 30) {
+          score += 20; // Very good
+        } else if (proteinPerServing >= 25) {
+          score += 15; // Good
+        } else if (proteinPerServing >= 20) {
+          score += 10; // Moderate
+        }
+        // Under 20g protein: no bonus
+      }
+
+      // HIGH PROTEIN: Similar to muscle gain
+      if (healthGoal === 'high-protein' && proteinPerServing) {
+        if (proteinPerServing >= 35) {
+          score += 25;
+        } else if (proteinPerServing >= 25) {
+          score += 20;
+        } else if (proteinPerServing >= 20) {
+          score += 15;
+        } else if (proteinPerServing >= 15) {
+          score += 10;
+        }
+      }
+
+      // LOW-CARB: Prioritize low-carb recipes
+      if (healthGoal === 'low-carb' && nutrition.carbs) {
+        const carbsPerServing = nutrition.carbs / (recipe.servings || 1);
+        if (carbsPerServing < 15) {
+          score += 25;
+        } else if (carbsPerServing < 30) {
+          score += 20;
+        } else if (carbsPerServing < 50) {
+          score += 15;
+        }
+      }
+
+      // HEART HEALTH: Prioritize recipes with high health scores
+      if (healthGoal === 'heart-health' && recipe.healthScore) {
+        if (recipe.healthScore >= 80) {
+          score += 25;
+        } else if (recipe.healthScore >= 70) {
+          score += 20;
+        } else if (recipe.healthScore >= 60) {
+          score += 15;
+        }
+      }
+
+      // Generic health goal match
       if (healthGoal && recipe.healthGoals?.includes(healthGoal.toLowerCase())) {
-        score += 15;
+        score += 15; // Bonus for matching health goal tags
       }
 
-      // Boost for budget
+      // 3. BUDGET SCORING (0-20 points)
+      // Match recipe price to user's budget preference
+      if (budget && recipe.pricePerServing) {
+        const budgetMap = {
+          'low': { max: 300, ideal: 200 },      // $3 max, $2 ideal
+          'medium': { max: 600, ideal: 400 },   // $6 max, $4 ideal
+          'high': { max: 1000, ideal: 700 }     // $10 max, $7 ideal
+        };
+
+        const budgetConfig = budgetMap[budget.toLowerCase()];
+        
+        if (budgetConfig) {
+          const price = recipe.pricePerServing;
+          
+          if (price <= budgetConfig.ideal) {
+            score += 20; // Perfect budget match
+          } else if (price <= budgetConfig.max) {
+            // Proportional score between ideal and max
+            const ratio = (budgetConfig.max - price) / (budgetConfig.max - budgetConfig.ideal);
+            score += Math.round(ratio * 15);
+          }
+          // Over budget: no bonus
+        }
+      }
+
+      // Additional budget-friendly bonus
       if (budget === 'low' && recipe.isBudgetFriendly) {
         score += 10;
       }
 
-      // Boost for high ratings
+      // 4. ADDITIONAL QUALITY FACTORS
+
+      // User ratings (0-10 points)
       if (recipe.rating) {
-        score += recipe.rating * 2;
+        score += recipe.rating * 2; // 5-star rating = 10 points
       }
 
-      // Boost for Spoonacular score
+      // Spoonacular quality score (0-10 points)
       if (recipe.spoonacularScore) {
-        score += recipe.spoonacularScore * 0.1;
+        score += recipe.spoonacularScore * 0.1; // Max 10 points
+      }
+
+      // Popularity bonus (0-5 points)
+      if (recipe.savedCount) {
+        score += Math.min(recipe.savedCount * 0.1, 5); // Cap at 5 points
+      }
+
+      // Quick recipe bonus (0-5 points)
+      if (recipe.readyInMinutes && recipe.readyInMinutes <= 30) {
+        score += 5;
+      } else if (recipe.readyInMinutes && recipe.readyInMinutes <= 45) {
+        score += 3;
       }
 
       return {
         ...recipe,
-        optimizationScore: score
+        optimizationScore: Math.round(score * 10) / 10 // Round to 1 decimal
       };
     }).sort((a, b) => b.optimizationScore - a.optimizationScore);
   }

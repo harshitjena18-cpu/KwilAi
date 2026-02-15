@@ -11,6 +11,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import pantryRoutes from './src/routes/pantryRoutes.js';
 import recipeRoutes from './src/routes/recipeRoutes.js';
+import voiceRoutes from './src/routes/voiceRoutes.js';
 import { errorHandler, notFound } from './src/middleware/errorHandler.js';
 
 // Load environment variables
@@ -99,6 +100,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/pantry', pantryRoutes);
 app.use('/api/recipes', recipeRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -129,6 +131,9 @@ app.get('/', (req, res) => {
         addRecipe: 'POST /api/recipes',
         updateRecipe: 'PUT /api/recipes/:id',
         deleteRecipe: 'DELETE /api/recipes/:id',
+      },
+      voice: {
+        transcribe: 'POST /api/voice/transcribe',
       }
     }
   });
