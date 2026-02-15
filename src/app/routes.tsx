@@ -13,6 +13,7 @@ import HealthPage from './pages/HealthPage';
 import ProfilePage from './pages/ProfilePage';
 import ScannerPage from './pages/ScannerPage';
 import ShoppingListPage from './pages/ShoppingListPage';
+import UpgradePage from './pages/UpgradePage';
 
 export const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ export const router = createBrowserRouter([
       {
         path: 'shopping-list',
         element: <ShoppingListPage />,
+      },
+      {
+        path: 'upgrade',
+        element: <UpgradePage />,
       },
     ],
   },

@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
   TrendingUp,
-  TrendingDown,
   Flame,
   Zap,
   Target,
@@ -11,7 +10,9 @@ import {
   Trophy,
   Activity,
   ChevronDown,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
+  Plus,
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -25,105 +26,112 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import {
+  getDailySummary,
+  getWeeklySummary,
+  getTodayDateString,
+  type DailySummary,
+  type WeeklySummary,
+} from '../../../services/nutritionService';
+import { getCookingStats, type CookingStats } from '../../../services/cookingSessionService';
 
 type TimePeriod = 'week' | 'month' | 'year';
+
+const DEMO_USER_ID = 'demo-user-001';
 
 export default function KwilHealthDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('week');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [todaySummary, setTodaySummary] = useState<DailySummary | null>(null);
+  const [weeklySummary, setWeeklySummary] = useState<WeeklySummary | null>(null);
+  const [cookingStats, setCookingStats] = useState<CookingStats | null>(null);
 
-  // Weekly data for calories bar chart
-  const weeklyCaloriesData = [
-    { day: 'Mon', calories: 1800, goal: 2000 },
-    { day: 'Tue', calories: 2100, goal: 2000 },
-    { day: 'Wed', calories: 1900, goal: 2000 },
-    { day: 'Thu', calories: 2200, goal: 2000 },
-    { day: 'Fri', calories: 1850, goal: 2000 },
-    { day: 'Sat', calories: 2300, goal: 2000 },
-    { day: 'Sun', calories: 1950, goal: 2000 },
-  ];
+  const navigate = useNavigate();
 
-  // Monthly data
-  const monthlyCaloriesData = [
-    { day: 'W1', calories: 1850, goal: 2000 },
-    { day: 'W2', calories: 1950, goal: 2000 },
-    { day: 'W3', calories: 2100, goal: 2000 },
-    { day: 'W4', calories: 1900, goal: 2000 },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // Yearly data
-  const yearlyCaloriesData = [
-    { day: 'Jan', calories: 1900, goal: 2000 },
-    { day: 'Feb', calories: 1950, goal: 2000 },
-    { day: 'Mar', calories: 2050, goal: 2000 },
-    { day: 'Apr', calories: 2100, goal: 2000 },
-    { day: 'May', calories: 1850, goal: 2000 },
-    { day: 'Jun', calories: 1950, goal: 2000 },
-    { day: 'Jul', calories: 2000, goal: 2000 },
-    { day: 'Aug', calories: 2100, goal: 2000 },
-    { day: 'Sep', calories: 1900, goal: 2000 },
-    { day: 'Oct', calories: 2050, goal: 2000 },
-    { day: 'Nov', calories: 1950, goal: 2000 },
-    { day: 'Dec', calories: 2000, goal: 2000 },
-  ];
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const today = getTodayDateString();
+      const [daily, weekly, stats] = await Promise.allSettled([
+        getDailySummary(DEMO_USER_ID, today),
+        getWeeklySummary(DEMO_USER_ID),
+        getCookingStats(DEMO_USER_ID),
+      ]);
 
-  // Protein line chart data
-  const weeklyProteinData = [
-    { day: 'Mon', protein: 85, goal: 100 },
-    { day: 'Tue', protein: 92, goal: 100 },
-    { day: 'Wed', protein: 88, goal: 100 },
-    { day: 'Thu', protein: 105, goal: 100 },
-    { day: 'Fri', protein: 78, goal: 100 },
-    { day: 'Sat', protein: 95, goal: 100 },
-    { day: 'Sun', protein: 90, goal: 100 },
-  ];
+      if (daily.status === 'fulfilled') setTodaySummary(daily.value);
+      if (weekly.status === 'fulfilled') setWeeklySummary(weekly.value);
+      if (stats.status === 'fulfilled') setCookingStats(stats.value);
+    } catch (error) {
+      console.error('Error loading health data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const monthlyProteinData = [
-    { day: 'W1', protein: 88, goal: 100 },
-    { day: 'W2', protein: 92, goal: 100 },
-    { day: 'W3', protein: 95, goal: 100 },
-    { day: 'W4', protein: 85, goal: 100 },
-  ];
-
-  const yearlyProteinData = [
-    { day: 'Jan', protein: 85, goal: 100 },
-    { day: 'Feb', protein: 88, goal: 100 },
-    { day: 'Mar', protein: 92, goal: 100 },
-    { day: 'Apr', protein: 95, goal: 100 },
-    { day: 'May', protein: 90, goal: 100 },
-    { day: 'Jun', protein: 88, goal: 100 },
-    { day: 'Jul', protein: 93, goal: 100 },
-    { day: 'Aug', protein: 96, goal: 100 },
-    { day: 'Sep', protein: 91, goal: 100 },
-    { day: 'Oct', protein: 94, goal: 100 },
-    { day: 'Nov', protein: 89, goal: 100 },
-    { day: 'Dec', protein: 92, goal: 100 },
-  ];
-
-  const caloriesData = selectedPeriod === 'week' 
-    ? weeklyCaloriesData 
-    : selectedPeriod === 'month' 
-    ? monthlyCaloriesData 
-    : yearlyCaloriesData;
-
-  const proteinData = selectedPeriod === 'week' 
-    ? weeklyProteinData 
-    : selectedPeriod === 'month' 
-    ? monthlyProteinData 
-    : yearlyProteinData;
-
-  // Stats calculations
-  const weeklyAvgCalories = Math.round(
-    weeklyCaloriesData.reduce((sum, day) => sum + day.calories, 0) / weeklyCaloriesData.length
-  );
-  const currentStreak = 7;
-  const goalPercentage = 89;
-
-  // Progress ring calculation
-  const todayCalories = 1650;
+  // Nutrition goals
   const todayGoal = 2000;
-  const todayProgress = (todayCalories / todayGoal) * 100;
-  const circumference = 2 * Math.PI * 70; // radius = 70
+  const proteinGoal = 100;
+  const carbsGoal = 250;
+  const fatsGoal = 65;
+
+  // Today's data
+  const todayCalories = todaySummary?.totalCalories || 0;
+  const todayProtein = todaySummary?.totalProtein || 0;
+  const todayCarbs = todaySummary?.totalCarbs || 0;
+  const todayFats = todaySummary?.totalFats || 0;
+  const todayProgress = todayGoal > 0 ? Math.min((todayCalories / todayGoal) * 100, 100) : 0;
+
+  // Weekly chart data
+  const caloriesData = weeklySummary?.dailySummaries?.map((day) => {
+    const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+    return {
+      day: dayName,
+      calories: day.totalCalories,
+      goal: todayGoal,
+    };
+  }) || [
+    { day: 'Mon', calories: 0, goal: todayGoal },
+    { day: 'Tue', calories: 0, goal: todayGoal },
+    { day: 'Wed', calories: 0, goal: todayGoal },
+    { day: 'Thu', calories: 0, goal: todayGoal },
+    { day: 'Fri', calories: 0, goal: todayGoal },
+    { day: 'Sat', calories: 0, goal: todayGoal },
+    { day: 'Sun', calories: 0, goal: todayGoal },
+  ];
+
+  const proteinData = weeklySummary?.dailySummaries?.map((day) => {
+    const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+    return {
+      day: dayName,
+      protein: day.totalProtein,
+      goal: proteinGoal,
+    };
+  }) || [
+    { day: 'Mon', protein: 0, goal: proteinGoal },
+    { day: 'Tue', protein: 0, goal: proteinGoal },
+    { day: 'Wed', protein: 0, goal: proteinGoal },
+    { day: 'Thu', protein: 0, goal: proteinGoal },
+    { day: 'Fri', protein: 0, goal: proteinGoal },
+    { day: 'Sat', protein: 0, goal: proteinGoal },
+    { day: 'Sun', protein: 0, goal: proteinGoal },
+  ];
+
+  // Stats
+  const weeklyAvgCalories = weeklySummary?.averageDaily?.calories || 0;
+  const completedMeals = cookingStats?.completedSessions || 0;
+  const daysWithData = weeklySummary?.dailySummaries?.filter(d => d.entries.length > 0).length || 0;
+  const goalMetDays = weeklySummary?.dailySummaries?.filter(
+    d => d.totalCalories >= todayGoal * 0.8 && d.totalCalories <= todayGoal * 1.2
+  ).length || 0;
+  const goalPercentage = daysWithData > 0 ? Math.round((goalMetDays / daysWithData) * 100) : 0;
+
+  // Progress ring
+  const circumference = 2 * Math.PI * 70;
   const strokeDashoffset = circumference - (todayProgress / 100) * circumference;
 
   // Custom tooltip
@@ -152,7 +160,19 @@ export default function KwilHealthDashboard() {
     { id: 'year', label: 'Year', icon: <Calendar size={14} /> },
   ];
 
-  const navigate = useNavigate();
+  if (loading) {
+    return (
+      <div
+        className="relative w-full h-full flex items-center justify-center"
+        style={{ backgroundColor: '#050B08' }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={40} className="text-[#00FF9C] animate-spin" />
+          <p className="text-[#A0A0A0] text-sm">Loading health data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -272,10 +292,10 @@ export default function KwilHealthDashboard() {
           >
             <Zap size={24} className="text-[#00FF9C] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white mb-1">{weeklyAvgCalories}</p>
-            <p className="text-[#A0A0A0] text-xs">Weekly Avg</p>
+            <p className="text-[#A0A0A0] text-xs">Avg Cal</p>
           </motion.div>
 
-          {/* Streak */}
+          {/* Meals Cooked */}
           <motion.div
             className="rounded-2xl p-4 text-center"
             style={{
@@ -290,8 +310,8 @@ export default function KwilHealthDashboard() {
             }}
           >
             <Trophy size={24} className="text-[#FFD700] mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white mb-1">{currentStreak}</p>
-            <p className="text-[#A0A0A0] text-xs">Day Streak</p>
+            <p className="text-2xl font-bold text-white mb-1">{completedMeals}</p>
+            <p className="text-[#A0A0A0] text-xs">Cooked</p>
           </motion.div>
 
           {/* Goal % */}
@@ -310,7 +330,7 @@ export default function KwilHealthDashboard() {
           >
             <Target size={24} className="text-[#10B981] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white mb-1">{goalPercentage}%</p>
-            <p className="text-[#A0A0A0] text-xs">Goal Met</p>
+            <p className="text-[#A0A0A0] text-xs">On Target</p>
           </motion.div>
         </div>
 
@@ -390,18 +410,39 @@ export default function KwilHealthDashboard() {
             style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
           >
             <div className="text-center">
-              <p className="text-[#00FF9C] text-lg font-bold">125g</p>
+              <p className="text-[#00FF9C] text-lg font-bold">{todayProtein}g</p>
               <p className="text-[#A0A0A0] text-xs">Protein</p>
             </div>
             <div className="text-center">
-              <p className="text-[#FFD93D] text-lg font-bold">180g</p>
+              <p className="text-[#FFD93D] text-lg font-bold">{todayCarbs}g</p>
               <p className="text-[#A0A0A0] text-xs">Carbs</p>
             </div>
             <div className="text-center">
-              <p className="text-[#FF9CEE] text-lg font-bold">55g</p>
+              <p className="text-[#FF9CEE] text-lg font-bold">{todayFats}g</p>
               <p className="text-[#A0A0A0] text-xs">Fat</p>
             </div>
           </div>
+
+          {/* Empty State Hint */}
+          {todayCalories === 0 && (
+            <div className="mt-4 pt-4 border-t text-center" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+              <p className="text-[#A0A0A0] text-xs mb-2">No meals logged today</p>
+              <motion.button
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm"
+                style={{
+                  background: 'rgba(0, 255, 156, 0.15)',
+                  border: '1px solid rgba(0, 255, 156, 0.3)',
+                  color: '#00FF9C',
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/app/recipes')}
+              >
+                <Plus size={16} />
+                Cook a recipe to start tracking
+              </motion.button>
+            </div>
+          )}
         </motion.div>
 
         {/* Calories Bar Chart */}
@@ -420,7 +461,7 @@ export default function KwilHealthDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-white font-semibold">Calories Intake</h3>
-              <p className="text-[#A0A0A0] text-xs">Daily tracking</p>
+              <p className="text-[#A0A0A0] text-xs">Weekly tracking</p>
             </div>
             <Flame size={20} className="text-[#FF6B6B]" />
           </div>
@@ -530,7 +571,6 @@ export default function KwilHealthDashboard() {
                     fill: '#00FF9C',
                     stroke: '#050B08',
                     strokeWidth: 2,
-                    filter: 'drop-shadow(0 0 8px rgba(0, 255, 156, 0.8))',
                   }}
                 />
                 <defs>
@@ -548,10 +588,52 @@ export default function KwilHealthDashboard() {
             style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
           >
             <p className="text-[#A0A0A0] text-xs">Average:</p>
-            <p className="text-[#00FF9C] font-bold">90g</p>
-            <p className="text-[#A0A0A0] text-xs">/ 100g goal</p>
+            <p className="text-[#00FF9C] font-bold">{weeklySummary?.averageDaily?.protein || 0}g</p>
+            <p className="text-[#A0A0A0] text-xs">/ {proteinGoal}g goal</p>
           </div>
         </motion.div>
+
+        {/* Recent Meals */}
+        {todaySummary && todaySummary.entries.length > 0 && (
+          <motion.div
+            className="rounded-3xl p-6"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h3 className="text-white font-semibold mb-4">Today's Meals</h3>
+            <div className="space-y-3">
+              {todaySummary.entries.map((entry, index) => (
+                <div
+                  key={entry.id}
+                  className="rounded-2xl p-3 flex items-center justify-between"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                  }}
+                >
+                  <div>
+                    <p className="text-white text-sm font-medium">
+                      {entry.recipeName || 'Manual Entry'}
+                    </p>
+                    <p className="text-[#A0A0A0] text-xs">
+                      P: {entry.protein}g | C: {entry.carbs}g | F: {entry.fats}g
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[#00FF9C] font-bold">{entry.calories}</p>
+                    <p className="text-[#A0A0A0] text-xs">kcal</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Bottom Spacing */}
         <div className="h-20" />

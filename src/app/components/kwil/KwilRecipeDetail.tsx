@@ -285,7 +285,7 @@ export default function KwilRecipeDetail() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-24">
+      <div className="flex-1 overflow-y-auto px-6 pb-32">
         <AnimatePresence mode="wait">
           {activeTab === 'ingredients' && (
             <motion.div
@@ -551,33 +551,44 @@ export default function KwilRecipeDetail() {
         </AnimatePresence>
       </div>
 
-      {/* Floating Voice Assistant Button */}
-      <motion.button
-        className="absolute bottom-6 right-6 w-16 h-16 rounded-full flex items-center justify-center z-20"
+      {/* Bottom Action Bar */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 z-20 px-6 py-4"
         style={{
-          background: 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)',
-          boxShadow: '0 0 40px rgba(0, 255, 156, 0.6), 0 8px 16px rgba(0, 0, 0, 0.3)',
+          background: 'linear-gradient(to top, rgba(5, 11, 8, 0.98) 60%, transparent 100%)',
         }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{
-          scale: 1,
-          rotate: 0,
-          boxShadow: [
-            '0 0 40px rgba(0, 255, 156, 0.6), 0 8px 16px rgba(0, 0, 0, 0.3)',
-            '0 0 60px rgba(0, 255, 156, 0.8), 0 8px 16px rgba(0, 0, 0, 0.3)',
-            '0 0 40px rgba(0, 255, 156, 0.6), 0 8px 16px rgba(0, 0, 0, 0.3)',
-          ],
-        }}
-        transition={{
-          scale: { delay: 0.5, type: 'spring', damping: 10 },
-          rotate: { delay: 0.5, type: 'spring', damping: 10 },
-          boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-        }}
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5 }}
       >
-        <Mic size={28} className="text-[#050B08]" strokeWidth={2.5} />
-      </motion.button>
+        <div className="flex items-center gap-3">
+          <motion.button
+            className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{
+              background: 'rgba(0, 255, 156, 0.15)',
+              border: '2px solid rgba(0, 255, 156, 0.4)',
+            }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Mic size={24} className="text-[#00FF9C]" />
+          </motion.button>
+          <motion.button
+            className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-lg"
+            style={{
+              background: 'linear-gradient(135deg, #00FF9C, #10B981)',
+              color: '#050B08',
+              boxShadow: '0 0 30px rgba(0, 255, 156, 0.5)',
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/app/recipes/recipe-demo-001/cook')}
+          >
+            <ChefHat size={22} />
+            Start Cooking
+          </motion.button>
+        </div>
+      </motion.div>
     </div>
   );
 }

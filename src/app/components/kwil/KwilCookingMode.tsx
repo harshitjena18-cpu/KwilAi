@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { 
   X,
   Mic,
@@ -9,8 +10,18 @@ import {
   Pause,
   RotateCcw,
   Volume2,
-  Check
+  Check,
+  Trophy,
+  Loader2,
 } from 'lucide-react';
+import {
+  startCookingSession,
+  nextStep as apiNextStep,
+  previousStep as apiPreviousStep,
+  finishCookingSession,
+  getActiveSession,
+  type CookingSession,
+} from '../../../services/cookingSessionService';
 
 interface CookingStep {
   id: string;
@@ -19,24 +30,82 @@ interface CookingStep {
   duration?: number; // in seconds
 }
 
-export default function KwilCookingMode() {
+interface KwilCookingModeProps {
+  recipeId?: string;
+  recipeName?: string;
+  steps?: CookingStep[];
+  nutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+  };
+  onComplete?: () => void;
+  onExit?: () => void;
+}
+
+const DEMO_USER_ID = 'demo-user-001';
+
+const DEFAULT_STEPS: CookingStep[] = [
+  { id: '1', number: 1, instruction: 'Season chicken breast with salt, pepper, and your favorite herbs.', duration: 60 },
+  { id: '2', number: 2, instruction: 'Heat olive oil in a pan over medium-high heat.', duration: 120 },
+  { id: '3', number: 3, instruction: 'Cook chicken for 6-7 minutes on each side until golden brown.', duration: 420 },
+  { id: '4', number: 4, instruction: 'Let chicken rest for 5 minutes, then slice into strips.', duration: 300 },
+  { id: '5', number: 5, instruction: 'Prepare salad base with mixed greens and cherry tomatoes.' },
+  { id: '6', number: 6, instruction: 'Top with sliced chicken, avocado, and drizzle with lemon juice.' },
+];
+
+export default function KwilCookingMode({
+  recipeId = 'recipe-demo-001',
+  recipeName = 'Grilled Chicken Power Salad',
+  steps = DEFAULT_STEPS,
+  nutrition = { calories: 450, protein: 42, carbs: 18, fats: 24 },
+  onComplete,
+  onExit,
+}: KwilCookingModeProps) {
+  const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-
-  const steps: CookingStep[] = [
-    { id: '1', number: 1, instruction: 'Season chicken breast with salt, pepper, and your favorite herbs.', duration: 60 },
-    { id: '2', number: 2, instruction: 'Heat olive oil in a pan over medium-high heat.', duration: 120 },
-    { id: '3', number: 3, instruction: 'Cook chicken for 6-7 minutes on each side until golden brown.', duration: 420 },
-    { id: '4', number: 4, instruction: 'Let chicken rest for 5 minutes, then slice into strips.', duration: 300 },
-    { id: '5', number: 5, instruction: 'Prepare salad base with mixed greens and cherry tomatoes.' },
-    { id: '6', number: 6, instruction: 'Top with sliced chicken, avocado, and drizzle with lemon juice.' },
-  ];
+  const [session, setSession] = useState<CookingSession | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const currentStep = steps[currentStepIndex];
   const totalSteps = steps.length;
   const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+
+  // Start or resume cooking session on mount
+  useEffect(() => {
+    initSession();
+  }, []);
+
+  const initSession = async () => {
+    try {
+      // Check for existing active session
+      const existing = await getActiveSession(DEMO_USER_ID, recipeId);
+      if (existing) {
+        setSession(existing);
+        setCurrentStepIndex(Math.min(existing.currentStep, totalSteps - 1));
+      } else {
+        // Start new session
+        const newSession = await startCookingSession(
+          DEMO_USER_ID,
+          recipeId,
+          recipeName,
+          totalSteps
+        );
+        setSession(newSession);
+      }
+    } catch (error) {
+      console.error('Failed to init cooking session:', error);
+      // Continue without session - still allow cooking
+    } finally {
+      setSessionLoading(false);
+    }
+  };
 
   // Initialize timer when step changes
   useEffect(() => {
@@ -59,15 +128,68 @@ export default function KwilCookingMode() {
     }
   }, [isTimerRunning, timeRemaining]);
 
-  const goToNextStep = () => {
+  const goToNextStep = async () => {
     if (currentStepIndex < totalSteps - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
+      const newIndex = currentStepIndex + 1;
+      setCurrentStepIndex(newIndex);
+
+      // Update server session
+      if (session) {
+        try {
+          const updated = await apiNextStep(DEMO_USER_ID, session.id);
+          setSession(updated);
+        } catch (error) {
+          console.error('Failed to update session step:', error);
+        }
+      }
     }
   };
 
-  const goToPreviousStep = () => {
+  const goToPreviousStep = async () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
+      const newIndex = currentStepIndex - 1;
+      setCurrentStepIndex(newIndex);
+
+      // Update server session
+      if (session) {
+        try {
+          const updated = await apiPreviousStep(DEMO_USER_ID, session.id);
+          setSession(updated);
+        } catch (error) {
+          console.error('Failed to update session step:', error);
+        }
+      }
+    }
+  };
+
+  const handleCompleteRecipe = async () => {
+    setCompleting(true);
+    try {
+      if (session) {
+        await finishCookingSession(DEMO_USER_ID, session.id, nutrition);
+      }
+      setShowCompletion(true);
+    } catch (error) {
+      console.error('Failed to finish cooking session:', error);
+      setShowCompletion(true); // Still show completion UI
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const handleExit = () => {
+    if (onExit) {
+      onExit();
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleCompletionDone = () => {
+    if (onComplete) {
+      onComplete();
+    } else {
+      navigate('/app/health');
     }
   };
 
@@ -90,11 +212,24 @@ export default function KwilCookingMode() {
 
   const toggleVoiceAssistant = () => {
     setIsListening(!isListening);
-    // Simulate voice command after 2 seconds
     if (!isListening) {
       setTimeout(() => setIsListening(false), 2000);
     }
   };
+
+  if (sessionLoading) {
+    return (
+      <div 
+        className="relative w-full h-full flex items-center justify-center"
+        style={{ backgroundColor: '#000000' }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={40} className="text-[#00FF9C] animate-spin" />
+          <p className="text-[#A0A0A0] text-sm">Starting cooking session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -134,8 +269,9 @@ export default function KwilCookingMode() {
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
-            whileHover={{ scale: 1.1, background: 'rgba(255, 255, 255, 0.08)' }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            onClick={handleExit}
           >
             <X size={24} className="text-white" />
           </motion.button>
@@ -143,6 +279,11 @@ export default function KwilCookingMode() {
           {/* Step Counter */}
           <div className="text-center">
             <p className="text-[#00FF9C] text-sm font-medium">COOKING MODE</p>
+            {session && (
+              <p className="text-[#A0A0A0] text-xs mt-0.5">
+                Session active
+              </p>
+            )}
           </div>
 
           {/* Sound Toggle */}
@@ -152,7 +293,7 @@ export default function KwilCookingMode() {
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
-            whileHover={{ scale: 1.1, background: 'rgba(255, 255, 255, 0.08)' }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <Volume2 size={24} className="text-white" />
@@ -233,7 +374,6 @@ export default function KwilCookingMode() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                {/* Timer Display */}
                 <div 
                   className="inline-flex items-center justify-center px-8 py-4 rounded-2xl"
                   style={{
@@ -263,7 +403,6 @@ export default function KwilCookingMode() {
 
                 {/* Timer Controls */}
                 <div className="flex items-center justify-center gap-3">
-                  {/* Play/Pause */}
                   <motion.button
                     onClick={toggleTimer}
                     className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -279,11 +418,10 @@ export default function KwilCookingMode() {
                     {isTimerRunning ? (
                       <Pause size={24} className="text-[#000000]" fill="#000000" />
                     ) : (
-                      <Play size={24} className={isTimerRunning ? 'text-[#000000]' : 'text-white'} />
+                      <Play size={24} className="text-white" />
                     )}
                   </motion.button>
 
-                  {/* Reset */}
                   <motion.button
                     onClick={resetTimer}
                     className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -300,7 +438,7 @@ export default function KwilCookingMode() {
               </motion.div>
             )}
 
-            {/* Completion Check */}
+            {/* Completion Button on Last Step */}
             {currentStepIndex === totalSteps - 1 && (
               <motion.div
                 className="pt-4"
@@ -309,14 +447,22 @@ export default function KwilCookingMode() {
                 transition={{ delay: 0.4 }}
               >
                 <button
+                  onClick={handleCompleteRecipe}
+                  disabled={completing}
                   className="px-6 py-3 rounded-full flex items-center gap-2 mx-auto"
                   style={{
                     background: 'linear-gradient(135deg, #00FF9C, #10B981)',
                     boxShadow: '0 0 30px rgba(0, 255, 156, 0.5)',
                   }}
                 >
-                  <Check size={20} className="text-[#000000]" />
-                  <span className="text-[#000000] font-bold">Complete Recipe</span>
+                  {completing ? (
+                    <Loader2 size={20} className="text-[#000000] animate-spin" />
+                  ) : (
+                    <Check size={20} className="text-[#000000]" />
+                  )}
+                  <span className="text-[#000000] font-bold">
+                    {completing ? 'Saving...' : 'Complete Recipe'}
+                  </span>
                 </button>
               </motion.div>
             )}
@@ -345,7 +491,7 @@ export default function KwilCookingMode() {
             <ChevronLeft size={28} className="text-white" />
           </motion.button>
 
-          {/* Voice Assistant Button - Center & Large */}
+          {/* Voice Assistant Button */}
           <motion.button
             onClick={toggleVoiceAssistant}
             className="relative w-24 h-24 rounded-full flex items-center justify-center"
@@ -374,7 +520,6 @@ export default function KwilCookingMode() {
               repeat: isListening ? Infinity : 0,
             }}
           >
-            {/* Pulse Rings */}
             {isListening && (
               <>
                 <motion.div
@@ -391,7 +536,6 @@ export default function KwilCookingMode() {
                 />
               </>
             )}
-
             <Mic 
               size={40} 
               className={isListening ? 'text-[#000000]' : 'text-[#00FF9C]'} 
@@ -443,14 +587,8 @@ export default function KwilCookingMode() {
               >
                 <motion.div
                   className="w-2 h-2 rounded-full bg-[#00FF9C]"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [1, 0.5, 1],
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                  }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
                 />
                 <p className="text-[#00FF9C] text-sm font-medium">
                   Listening... Say "Next" or "Back"
@@ -466,9 +604,7 @@ export default function KwilCookingMode() {
         {timeRemaining === 0 && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center z-50"
-            style={{
-              background: 'rgba(0, 0, 0, 0.9)',
-            }}
+            style={{ background: 'rgba(0, 0, 0, 0.9)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -492,10 +628,7 @@ export default function KwilCookingMode() {
                     '0 0 60px rgba(0, 255, 156, 0.8)',
                   ],
                 }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                }}
+                transition={{ duration: 1, repeat: Infinity }}
               >
                 <Check size={64} className="text-[#000000]" strokeWidth={3} />
               </motion.div>
@@ -514,6 +647,102 @@ export default function KwilCookingMode() {
               >
                 Continue to Next Step
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Completion Overlay */}
+      <AnimatePresence>
+        {showCompletion && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center z-50"
+            style={{ background: 'rgba(0, 0, 0, 0.95)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="text-center space-y-6 px-8"
+              initial={{ scale: 0.8, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 15 }}
+            >
+              <motion.div
+                className="w-28 h-28 rounded-full mx-auto flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                  boxShadow: '0 0 60px rgba(255, 215, 0, 0.6)',
+                }}
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Trophy size={56} className="text-[#050B08]" />
+              </motion.div>
+
+              <div>
+                <h2 className="text-white text-3xl font-bold mb-2">
+                  Recipe Complete!
+                </h2>
+                <p className="text-[#A0A0A0] text-lg mb-1">{recipeName}</p>
+                <p className="text-[#00FF9C] text-sm">
+                  Nutrition logged automatically
+                </p>
+              </div>
+
+              {/* Nutrition Summary */}
+              <div
+                className="rounded-2xl p-4 mx-auto max-w-xs"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(0, 255, 156, 0.2)',
+                }}
+              >
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div>
+                    <p className="text-[#FF6B6B] font-bold">{nutrition.calories}</p>
+                    <p className="text-[#A0A0A0] text-xs">kcal</p>
+                  </div>
+                  <div>
+                    <p className="text-[#00FF9C] font-bold">{nutrition.protein}g</p>
+                    <p className="text-[#A0A0A0] text-xs">Protein</p>
+                  </div>
+                  <div>
+                    <p className="text-[#FFD93D] font-bold">{nutrition.carbs}g</p>
+                    <p className="text-[#A0A0A0] text-xs">Carbs</p>
+                  </div>
+                  <div>
+                    <p className="text-[#FF9CEE] font-bold">{nutrition.fats}g</p>
+                    <p className="text-[#A0A0A0] text-xs">Fat</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleCompletionDone}
+                  className="w-full px-6 py-4 rounded-full font-bold"
+                  style={{
+                    background: 'linear-gradient(135deg, #00FF9C, #10B981)',
+                    color: '#050B08',
+                    boxShadow: '0 0 30px rgba(0, 255, 156, 0.5)',
+                  }}
+                >
+                  View Health Dashboard
+                </button>
+                <button
+                  onClick={handleExit}
+                  className="w-full px-6 py-3 rounded-full font-medium text-[#A0A0A0]"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  Back to Recipes
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

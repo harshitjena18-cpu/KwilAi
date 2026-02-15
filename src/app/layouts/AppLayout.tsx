@@ -21,7 +21,8 @@ export default function AppLayout() {
     if (path.startsWith('/app/search')) return 'search';
     if (path.startsWith('/app/recipes')) return 'recipes';
     if (path.startsWith('/app/profile') || path.startsWith('/app/health')) return 'profile';
-    if (path.startsWith('/app/scanner')) return 'home'; // Scanner accessible from home
+    if (path.startsWith('/app/scanner')) return 'home';
+    if (path.startsWith('/app/upgrade')) return 'profile';
     return 'home';
   };
 

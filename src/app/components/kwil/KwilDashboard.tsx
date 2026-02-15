@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   Bell, 
@@ -10,16 +10,18 @@ import {
   Zap,
   Heart,
   Clock,
-  Users,
   TrendingUp,
-  ChefHat
+  Crown,
 } from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilCard } from './KwilCard';
-import { KwilChip } from './KwilChip';
 import { KwilAvatar } from './KwilAvatar';
 import { KwilBadge } from './KwilBadge';
 import { useNavigate } from 'react-router';
+import { getDailySummary, getTodayDateString, type DailySummary } from '../../../services/nutritionService';
+import { getPlanSummary, type UsageSummary } from '../../../services/planService';
+
+const DEMO_USER_ID = 'demo-user-001';
 
 interface RecipeCard {
   id: string;
@@ -33,6 +35,33 @@ interface RecipeCard {
 
 export default function KwilDashboard() {
   const navigate = useNavigate();
+  const [todaySummary, setTodaySummary] = useState<DailySummary | null>(null);
+  const [planSummary, setPlanSummary] = useState<UsageSummary | null>(null);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const [daily, plan] = await Promise.allSettled([
+        getDailySummary(DEMO_USER_ID, getTodayDateString()),
+        getPlanSummary(DEMO_USER_ID),
+      ]);
+      if (daily.status === 'fulfilled') setTodaySummary(daily.value);
+      if (plan.status === 'fulfilled') setPlanSummary(plan.value);
+    } catch (error) {
+      console.error('Dashboard data load error:', error);
+    }
+  };
+
+  const calGoal = 2000;
+  const proteinGoal = 80;
+  const todayCal = todaySummary?.totalCalories || 0;
+  const todayProtein = todaySummary?.totalProtein || 0;
+  const calPct = calGoal > 0 ? Math.min((todayCal / calGoal) * 100, 100) : 0;
+  const proteinPct = proteinGoal > 0 ? Math.min((todayProtein / proteinGoal) * 100, 100) : 0;
+  const isPro = planSummary?.plan === 'pro';
 
   const quickActions = [
     { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
@@ -46,7 +75,7 @@ export default function KwilDashboard() {
     {
       id: '1',
       name: 'Protein Power Bowl',
-      image: '🥗',
+      image: '\u{1F957}',
       cookTime: '15 min',
       calories: '450 kcal',
       difficulty: 'Easy',
@@ -55,7 +84,7 @@ export default function KwilDashboard() {
     {
       id: '2',
       name: 'Keto Avocado Toast',
-      image: '🥑',
+      image: '\u{1F951}',
       cookTime: '10 min',
       calories: '320 kcal',
       difficulty: 'Easy',
@@ -64,7 +93,7 @@ export default function KwilDashboard() {
     {
       id: '3',
       name: 'Muscle Gain Smoothie',
-      image: '🥤',
+      image: '\u{1F964}',
       cookTime: '5 min',
       calories: '550 kcal',
       difficulty: 'Easy',
@@ -132,7 +161,14 @@ export default function KwilDashboard() {
           <div className="flex items-center gap-3">
             <KwilAvatar name="Harsh" size="md" glow />
             <div>
-              <h2 className="text-white text-lg font-bold">Hi Harsh 👋</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-white text-lg font-bold">Hi Harsh</h2>
+                {planSummary && (
+                  <KwilBadge variant={isPro ? 'warning' : 'primary'}>
+                    {isPro ? 'Pro' : 'Free'}
+                  </KwilBadge>
+                )}
+              </div>
               <p className="text-[#A0A0A0] text-xs">Ready to cook something amazing?</p>
             </div>
           </div>
@@ -163,6 +199,34 @@ export default function KwilDashboard() {
       {/* Content - Scrollable */}
       <div className="flex-1 overflow-y-auto px-6 pb-24 relative z-10">
         <div className="space-y-6">
+
+          {/* Plan Usage Banner (Free users) */}
+          {planSummary && !isPro && (
+            <motion.button
+              className="w-full rounded-2xl p-4 flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.05))',
+                border: '1px solid rgba(255, 215, 0, 0.3)',
+              }}
+              onClick={() => navigate('/app/upgrade')}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-3">
+                <Crown size={20} className="text-[#FFD700]" />
+                <div className="text-left">
+                  <p className="text-white text-sm font-medium">
+                    {planSummary.today.scans.remaining} scans left today
+                  </p>
+                  <p className="text-[#A0A0A0] text-xs">Upgrade to Pro for unlimited</p>
+                </div>
+              </div>
+              <KwilBadge variant="warning">Upgrade</KwilBadge>
+            </motion.button>
+          )}
+
           {/* AI Orb Section */}
           <motion.div
             className="py-8 flex flex-col items-center"
@@ -370,7 +434,12 @@ export default function KwilDashboard() {
           >
             <div className="flex items-center justify-between">
               <h4 className="text-white font-medium">Recommended for You</h4>
-              <button className="text-[#00FF9C] text-sm">See All</button>
+              <button 
+                className="text-[#00FF9C] text-sm"
+                onClick={() => navigate('/app/recipes')}
+              >
+                See All
+              </button>
             </div>
 
             {/* Horizontal Recipe Cards */}
@@ -378,7 +447,7 @@ export default function KwilDashboard() {
               {recommendedRecipes.map((recipe, index) => (
                 <motion.div
                   key={recipe.id}
-                  className="flex-shrink-0 rounded-2xl overflow-hidden"
+                  className="flex-shrink-0 rounded-2xl overflow-hidden relative"
                   style={{
                     width: '260px',
                     background: 'rgba(255, 255, 255, 0.05)',
@@ -440,27 +509,27 @@ export default function KwilDashboard() {
                       View Recipe
                     </button>
                   </div>
-
-                  {/* Glow Border Effect */}
-                  <div 
-                    className="absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(0, 255, 156, 0.1) 0%, transparent 50%)',
-                    }}
-                  />
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Today's Goals */}
+          {/* Today's Goals - Live Data */}
           <motion.div
             className="space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2 }}
           >
-            <h4 className="text-white font-medium">Today's Goals</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-medium">Today's Goals</h4>
+              <button 
+                className="text-[#00FF9C] text-sm"
+                onClick={() => navigate('/app/health')}
+              >
+                Details
+              </button>
+            </div>
             <KwilCard glow>
               <div className="space-y-4">
                 {/* Calories */}
@@ -470,19 +539,23 @@ export default function KwilDashboard() {
                       <Flame size={16} className="text-[#FF6B6B]" />
                       <span className="text-white text-sm">Calories</span>
                     </div>
-                    <span className="text-[#A0A0A0] text-sm">1,250 / 2,000 kcal</span>
+                    <span className="text-[#A0A0A0] text-sm">
+                      {todayCal.toLocaleString()} / {calGoal.toLocaleString()} kcal
+                    </span>
                   </div>
                   <div 
                     className="h-2 rounded-full overflow-hidden"
                     style={{ background: 'rgba(255, 255, 255, 0.1)' }}
                   >
-                    <div 
+                    <motion.div 
                       className="h-full rounded-full"
                       style={{
-                        width: '62.5%',
                         background: 'linear-gradient(90deg, #FF6B6B, #FF9CEE)',
                         boxShadow: '0 0 10px #FF6B6B',
                       }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${calPct}%` }}
+                      transition={{ duration: 0.8, delay: 1.3 }}
                     />
                   </div>
                 </div>
@@ -494,19 +567,23 @@ export default function KwilDashboard() {
                       <Apple size={16} className="text-[#00FF9C]" />
                       <span className="text-white text-sm">Protein</span>
                     </div>
-                    <span className="text-[#A0A0A0] text-sm">45 / 80 g</span>
+                    <span className="text-[#A0A0A0] text-sm">
+                      {todayProtein} / {proteinGoal} g
+                    </span>
                   </div>
                   <div 
                     className="h-2 rounded-full overflow-hidden"
                     style={{ background: 'rgba(255, 255, 255, 0.1)' }}
                   >
-                    <div 
+                    <motion.div 
                       className="h-full rounded-full"
                       style={{
-                        width: '56.25%',
                         background: 'linear-gradient(90deg, #00FF9C, #10B981)',
                         boxShadow: '0 0 10px #00FF9C',
                       }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${proteinPct}%` }}
+                      transition={{ duration: 0.8, delay: 1.4 }}
                     />
                   </div>
                 </div>
