@@ -307,26 +307,34 @@ export const saveRecipe = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const unsaveRecipe = asyncHandler(async (req, res) => {
-  const recipe = await Recipe.findById(req.params.id);
+  // Attempt to remove user from savedBy and decrement savedCount atomically
+  // only if user is in savedBy list
+  const recipe = await Recipe.findOneAndUpdate(
+    { _id: req.params.id, savedBy: req.user.id },
+    {
+      $pull: { savedBy: req.user.id },
+      $inc: { savedCount: -1 }
+    },
+    { new: true }
+  );
 
   if (!recipe) {
-    return res.status(404).json({
-      success: false,
-      message: 'Recipe not found'
-    });
-  }
+    // If update returned null, either recipe doesn't exist or user hasn't saved it
+    const existingRecipe = await Recipe.findById(req.params.id);
 
-  // Check if not saved
-  if (!recipe.savedBy.includes(req.user.id)) {
+    if (!existingRecipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recipe not found'
+      });
+    }
+
+    // Recipe exists but user not in saved list
     return res.status(400).json({
       success: false,
       message: 'Recipe not in saved list'
     });
   }
-
-  recipe.savedBy = recipe.savedBy.filter(id => id.toString() !== req.user.id);
-  recipe.savedCount = Math.max(0, recipe.savedCount - 1);
-  await recipe.save();
 
   res.status(200).json({
     success: true,
