@@ -273,31 +273,41 @@ export const getBudgetRecipes = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const saveRecipe = asyncHandler(async (req, res) => {
-  const recipe = await Recipe.findById(req.params.id);
+  // Optimization: Use findOneAndUpdate for atomic update
+  // This reduces DB calls from 2 (read + write) to 1 in the happy path
+  // and prevents race conditions where multiple requests could increment count incorrectly
+  const recipe = await Recipe.findOneAndUpdate(
+    { _id: req.params.id, savedBy: { $ne: req.user._id } },
+    {
+      $addToSet: { savedBy: req.user._id },
+      $inc: { savedCount: 1 }
+    },
+    { new: true }
+  );
 
-  if (!recipe) {
+  if (recipe) {
+    return res.status(200).json({
+      success: true,
+      message: 'Recipe saved successfully',
+      recipe
+    });
+  }
+
+  // Fallback to check specific error case (only if update didn't happen)
+  const existingRecipe = await Recipe.findById(req.params.id);
+
+  if (!existingRecipe) {
     return res.status(404).json({
       success: false,
       message: 'Recipe not found'
     });
   }
 
-  // Check if already saved
-  if (recipe.savedBy.includes(req.user.id)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Recipe already saved'
-    });
-  }
-
-  recipe.savedBy.push(req.user.id);
-  recipe.savedCount += 1;
-  await recipe.save();
-
-  res.status(200).json({
-    success: true,
-    message: 'Recipe saved successfully',
-    recipe
+  // If recipe exists but wasn't updated, it means user already saved it
+  // (because savedBy: { $ne: req.user._id } condition failed)
+  return res.status(400).json({
+    success: false,
+    message: 'Recipe already saved'
   });
 });
 
@@ -332,7 +342,7 @@ export const unsaveRecipe = asyncHandler(async (req, res) => {
     // Recipe exists but user not in saved list
     return res.status(400).json({
       success: false,
-      message: 'Recipe not in saved list'
+      message: 'Recipe not found'
     });
   }
 
