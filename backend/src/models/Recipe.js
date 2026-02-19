@@ -208,8 +208,11 @@ recipeSchema.index({ diets: 1 });
 recipeSchema.index({ healthGoals: 1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ 'nutrition.protein': 1 });
-recipeSchema.index({ savedCount: -1 });
-recipeSchema.index({ healthScore: -1 });
+// Compound indexes for common sort patterns + health score tie-breaking
+recipeSchema.index({ savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
+recipeSchema.index({ healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
+recipeSchema.index({ readyInMinutes: 1, healthScore: -1 }); // Optimized for "Quick" recipes
+recipeSchema.index({ pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
 recipeSchema.index({ createdAt: -1 });
 
 // ===========================
