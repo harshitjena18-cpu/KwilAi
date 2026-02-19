@@ -317,38 +317,39 @@ export const saveRecipe = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const unsaveRecipe = asyncHandler(async (req, res) => {
-  // Optimization: Atomic update for removing saved recipe
+  // Attempt to remove user from savedBy and decrement savedCount atomically
+  // only if user is in savedBy list
   const recipe = await Recipe.findOneAndUpdate(
-    { _id: req.params.id, savedBy: req.user._id },
+    { _id: req.params.id, savedBy: req.user.id },
     {
-      $pull: { savedBy: req.user._id },
+      $pull: { savedBy: req.user.id },
       $inc: { savedCount: -1 }
     },
     { new: true }
   );
 
-  if (recipe) {
-    return res.status(200).json({
-      success: true,
-      message: 'Recipe removed from saved list',
-      recipe
-    });
-  }
+  if (!recipe) {
+    // If update returned null, either recipe doesn't exist or user hasn't saved it
+    const existingRecipe = await Recipe.findById(req.params.id);
 
-  // Fallback to check specific error case
-  const existingRecipe = await Recipe.findById(req.params.id);
+    if (!existingRecipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recipe not found'
+      });
+    }
 
-  if (!existingRecipe) {
-    return res.status(404).json({
+    // Recipe exists but user not in saved list
+    return res.status(400).json({
       success: false,
       message: 'Recipe not found'
     });
   }
 
-  // If recipe exists but wasn't updated, it means user hadn't saved it
-  return res.status(400).json({
-    success: false,
-    message: 'Recipe not in saved list'
+  res.status(200).json({
+    success: true,
+    message: 'Recipe removed from saved list',
+    recipe
   });
 });
 
