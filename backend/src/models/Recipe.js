@@ -203,9 +203,10 @@ const recipeSchema = new mongoose.Schema({
 
 recipeSchema.index({ title: 'text', summary: 'text' });
 recipeSchema.index({ source: 1, externalId: 1 }, { unique: true, sparse: true });
-recipeSchema.index({ cuisines: 1 });
-recipeSchema.index({ diets: 1 });
-recipeSchema.index({ healthGoals: 1 });
+// Optimized compound indexes for browsing by category + sorting
+recipeSchema.index({ cuisines: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ diets: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ healthGoals: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ 'nutrition.protein': 1 });
 // Compound indexes for common sort patterns + health score tie-breaking
@@ -284,17 +285,24 @@ recipeSchema.methods.hasMinimumProtein = function(minProtein) {
 // Find or create recipe from external source
 recipeSchema.statics.findOrCreate = async function(recipeData) {
   if (recipeData.source && recipeData.externalId) {
-    const existing = await this.findOne({
-      source: recipeData.source,
-      externalId: recipeData.externalId
-    });
+    const { lastFetched, ...dataToInsert } = recipeData;
 
-    if (existing) {
-      // Update last fetched
-      existing.lastFetched = new Date();
-      await existing.save();
-      return existing;
-    }
+    // Optimization: Use atomic findOneAndUpdate with upsert
+    // This reduces DB calls from 2 to 1 and handles race conditions better.
+    // We use runValidators: true to ensure data integrity on updates.
+    return await this.findOneAndUpdate(
+      { source: recipeData.source, externalId: recipeData.externalId },
+      {
+        $set: { lastFetched: new Date() },
+        $setOnInsert: dataToInsert
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+        runValidators: true
+      }
+    );
   }
 
   return await this.create(recipeData);
