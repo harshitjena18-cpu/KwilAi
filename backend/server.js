@@ -23,6 +23,9 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// Trust the first proxy (required for correct rate limiting behind proxies like Nginx/Heroku)
+app.set('trust proxy', 1);
+
 // ===========================
 // SECURITY MIDDLEWARE
 // ===========================
