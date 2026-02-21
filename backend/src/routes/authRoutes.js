@@ -14,6 +14,10 @@ import {
   loginValidation,
   validate
 } from '../utils/validators.js';
+import {
+  loginLimiter,
+  registerLimiter
+} from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 
@@ -26,14 +30,14 @@ const router = express.Router();
  * @desc    Register a new user
  * @access  Public
  */
-router.post('/register', registerValidation, validate, register);
+router.post('/register', registerLimiter, registerValidation, validate, register);
 
 /**
  * @route   POST /api/auth/login
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', loginValidation, validate, login);
+router.post('/login', loginLimiter, loginValidation, validate, login);
 
 /**
  * @route   GET /api/auth/verify-email/:token
