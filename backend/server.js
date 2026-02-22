@@ -23,6 +23,10 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// Trust the first proxy (e.g., Nginx, Heroku, AWS ELB)
+// This is required for rate limiting to work correctly behind a proxy
+app.set('trust proxy', 1);
+
 // ===========================
 // SECURITY MIDDLEWARE
 // ===========================
