@@ -203,16 +203,18 @@ const recipeSchema = new mongoose.Schema({
 
 recipeSchema.index({ title: 'text', summary: 'text' });
 recipeSchema.index({ source: 1, externalId: 1 }, { unique: true, sparse: true });
-recipeSchema.index({ cuisines: 1 });
-recipeSchema.index({ diets: 1 });
-recipeSchema.index({ healthGoals: 1 });
+// Optimized indexes including isActive and sort fields
+recipeSchema.index({ cuisines: 1, isActive: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ diets: 1, isActive: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ healthGoals: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ 'nutrition.protein': 1 });
+recipeSchema.index({ savedBy: 1, updatedAt: -1 }); // Optimized for "Saved Recipes" query
 // Compound indexes for common sort patterns + health score tie-breaking
-recipeSchema.index({ savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
-recipeSchema.index({ healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
-recipeSchema.index({ readyInMinutes: 1, healthScore: -1 }); // Optimized for "Quick" recipes
-recipeSchema.index({ pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
+recipeSchema.index({ isActive: 1, savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
+recipeSchema.index({ isActive: 1, healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
+recipeSchema.index({ isActive: 1, readyInMinutes: 1, healthScore: -1 }); // Optimized for "Quick" recipes
+recipeSchema.index({ isActive: 1, pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
 recipeSchema.index({ createdAt: -1 });
 
 // ===========================
@@ -284,17 +286,24 @@ recipeSchema.methods.hasMinimumProtein = function(minProtein) {
 // Find or create recipe from external source
 recipeSchema.statics.findOrCreate = async function(recipeData) {
   if (recipeData.source && recipeData.externalId) {
-    const existing = await this.findOne({
-      source: recipeData.source,
-      externalId: recipeData.externalId
-    });
+    const { lastFetched, ...dataToInsert } = recipeData;
 
-    if (existing) {
-      // Update last fetched
-      existing.lastFetched = new Date();
-      await existing.save();
-      return existing;
-    }
+    // Optimization: Use atomic findOneAndUpdate with upsert
+    // This reduces DB calls from 2 to 1 and handles race conditions better.
+    // We use runValidators: true to ensure data integrity on updates.
+    return await this.findOneAndUpdate(
+      { source: recipeData.source, externalId: recipeData.externalId },
+      {
+        $set: { lastFetched: new Date() },
+        $setOnInsert: dataToInsert
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+        runValidators: true
+      }
+    );
   }
 
   return await this.create(recipeData);
