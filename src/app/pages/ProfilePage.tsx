@@ -198,6 +198,7 @@ export default function ProfilePage() {
                         <p className="text-white">{item.label}</p>
                       </div>
                       <KwilSwitch
+                        aria-label={item.label}
                         checked={item.id === 'notifications' ? notifications : emailAlerts}
                         onChange={(checked: boolean) => {
                           if (item.id === 'notifications') setNotifications(checked);
