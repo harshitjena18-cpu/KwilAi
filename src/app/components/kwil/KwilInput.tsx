@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface KwilInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -11,12 +11,17 @@ export function KwilInput({
   error, 
   icon,
   className = '',
+  id,
   ...props 
 }: KwilInputProps) {
+  const generatedId = useId();
+  const inputId = id || generatedId;
+  const errorId = `${inputId}-error`;
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-[#FFFFFF] text-sm mb-2">
+        <label htmlFor={inputId} className="block text-[#FFFFFF] text-sm mb-2">
           {label}
         </label>
       )}
@@ -27,6 +32,9 @@ export function KwilInput({
           </div>
         )}
         <input
+          id={inputId}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           className={`
             w-full px-4 py-3 ${icon ? 'pl-12' : ''}
             bg-white/5 backdrop-blur-md
@@ -37,6 +45,7 @@ export function KwilInput({
             focus:outline-none 
             focus:border-[#00FF9C]/50
             focus:shadow-[0_0_20px_rgba(0,255,156,0.2)]
+            focus-visible:ring-2 focus-visible:ring-[#00FF9C]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]
             ${error ? 'border-red-500/50' : ''}
             ${className}
           `}
@@ -44,7 +53,7 @@ export function KwilInput({
         />
       </div>
       {error && (
-        <p className="text-red-400 text-sm mt-1">{error}</p>
+        <p id={errorId} role="alert" className="text-red-400 text-sm mt-1">{error}</p>
       )}
     </div>
   );
