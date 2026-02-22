@@ -15,6 +15,11 @@ import {
   getSavedRecipes
 } from '../controllers/recipeController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import {
+  recipeSearchValidation,
+  suggestionValidation,
+  validate
+} from '../utils/validators.js';
 
 const router = express.Router();
 
@@ -28,7 +33,7 @@ const router = express.Router();
  * @access  Public
  * @query   ingredients, dietType, cuisine, healthGoal, budget, maxCalories, minProtein, limit
  */
-router.get('/suggestions', getSuggestions);
+router.get('/suggestions', suggestionValidation, validate, getSuggestions);
 
 /**
  * @route   GET /api/recipes/search
@@ -36,7 +41,7 @@ router.get('/suggestions', getSuggestions);
  * @access  Public
  * @query   q (search query), limit
  */
-router.get('/search', searchRecipes);
+router.get('/search', recipeSearchValidation, validate, searchRecipes);
 
 /**
  * @route   GET /api/recipes/popular
