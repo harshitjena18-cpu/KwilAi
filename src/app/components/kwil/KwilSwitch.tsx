@@ -1,6 +1,6 @@
 import React, { useState, useId } from 'react';
 
-interface KwilSwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
+interface KwilSwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange' | 'checked'> {
   defaultChecked?: boolean;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -14,7 +14,6 @@ export function KwilSwitch({
   onChange,
   label,
   className = '',
-  id,
   ...props
 }: KwilSwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
@@ -32,7 +31,6 @@ export function KwilSwitch({
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <button
-        type="button"
         role="switch"
         aria-checked={isChecked}
         aria-labelledby={label ? labelId : undefined}
@@ -59,8 +57,8 @@ export function KwilSwitch({
       {label && (
         <span
           id={labelId}
-          className="text-white text-sm cursor-pointer select-none"
           onClick={handleToggle}
+          className="text-white text-sm cursor-pointer"
         >
           {label}
         </span>
