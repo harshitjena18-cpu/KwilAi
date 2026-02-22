@@ -209,6 +209,7 @@ recipeSchema.index({ diets: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ healthGoals: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ 'nutrition.protein': 1 });
+recipeSchema.index({ savedBy: 1, updatedAt: -1 }); // Optimized for "Saved Recipes" query
 // Compound indexes for common sort patterns + health score tie-breaking
 recipeSchema.index({ isActive: 1, savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
 recipeSchema.index({ isActive: 1, healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
