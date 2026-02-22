@@ -175,6 +175,7 @@ export default function KwilDashboard() {
 
           {/* Notification */}
           <motion.button
+            aria-label="Notifications"
             className="relative w-10 h-10 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
