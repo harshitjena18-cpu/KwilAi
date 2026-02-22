@@ -203,16 +203,17 @@ const recipeSchema = new mongoose.Schema({
 
 recipeSchema.index({ title: 'text', summary: 'text' });
 recipeSchema.index({ source: 1, externalId: 1 }, { unique: true, sparse: true });
-recipeSchema.index({ cuisines: 1 });
-recipeSchema.index({ diets: 1 });
-recipeSchema.index({ healthGoals: 1 });
+// Optimized indexes including isActive and sort fields
+recipeSchema.index({ cuisines: 1, isActive: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ diets: 1, isActive: 1, healthScore: -1, savedCount: -1 });
+recipeSchema.index({ healthGoals: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ 'nutrition.protein': 1 });
 // Compound indexes for common sort patterns + health score tie-breaking
-recipeSchema.index({ savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
-recipeSchema.index({ healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
-recipeSchema.index({ readyInMinutes: 1, healthScore: -1 }); // Optimized for "Quick" recipes
-recipeSchema.index({ pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
+recipeSchema.index({ isActive: 1, savedCount: -1, healthScore: -1 }); // Optimized for "Popular" sort
+recipeSchema.index({ isActive: 1, healthScore: -1, savedCount: -1 }); // Optimized for "Healthy" sort & ingredient search
+recipeSchema.index({ isActive: 1, readyInMinutes: 1, healthScore: -1 }); // Optimized for "Quick" recipes
+recipeSchema.index({ isActive: 1, pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
 recipeSchema.index({ createdAt: -1 });
 
 // ===========================
