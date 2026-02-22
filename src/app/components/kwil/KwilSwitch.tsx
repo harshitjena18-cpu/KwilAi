@@ -35,8 +35,10 @@ export function KwilSwitch({
         aria-checked={isChecked}
         aria-labelledby={label ? labelId : undefined}
         onClick={handleToggle}
+        id={id}
         className={`
           relative w-14 h-8 rounded-full transition-all duration-300
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]
           ${isChecked 
             ? 'bg-gradient-to-r from-[#00FF9C] to-[#10B981] shadow-[0_0_20px_rgba(0,255,156,0.4)]' 
             : 'bg-white/10 border border-white/20'

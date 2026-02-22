@@ -129,17 +129,23 @@ Bottom navigation bar with glowing active states.
 ```
 
 ### KwilSwitch
-Toggle switch with neon gradient active state.
+Toggle switch with neon gradient active state and accessibility support.
 
 **Props:**
-- `label`: `string`
+- `label`: `string` (Visual label, also provides accessible name via `aria-labelledby`)
 - `checked`: `boolean`
 - `defaultChecked`: `boolean`
 - `onChange`: `(checked: boolean) => void`
+- `aria-label`: `string` (Required if `label` is not provided)
+- `...props`: Standard button attributes
 
 **Usage:**
 ```tsx
+// With visual label (automatically accessible)
 <KwilSwitch label="Dark Mode" defaultChecked />
+
+// Without visual label (requires aria-label)
+<KwilSwitch aria-label="Enable notifications" defaultChecked />
 ```
 
 ### KwilProgress
