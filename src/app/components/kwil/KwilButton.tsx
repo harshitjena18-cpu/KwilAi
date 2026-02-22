@@ -1,9 +1,11 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface KwilButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  isLoading?: boolean;
   children: React.ReactNode;
 }
 
@@ -11,11 +13,13 @@ export function KwilButton({
   variant = 'primary', 
   size = 'md',
   fullWidth = false,
+  isLoading = false,
   children, 
   className = '',
+  disabled,
   ...props 
 }: KwilButtonProps) {
-  const baseStyles = "relative rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "relative rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2";
   
   const variants = {
     primary: `bg-gradient-to-r from-[#00FF9C] to-[#10B981] text-[#050B08] 
@@ -50,8 +54,11 @@ export function KwilButton({
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
       {...props}
     >
+      {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
       {children}
     </button>
   );
