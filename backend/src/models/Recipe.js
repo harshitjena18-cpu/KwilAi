@@ -285,17 +285,24 @@ recipeSchema.methods.hasMinimumProtein = function(minProtein) {
 // Find or create recipe from external source
 recipeSchema.statics.findOrCreate = async function(recipeData) {
   if (recipeData.source && recipeData.externalId) {
-    const existing = await this.findOne({
-      source: recipeData.source,
-      externalId: recipeData.externalId
-    });
+    const { lastFetched, ...dataToInsert } = recipeData;
 
-    if (existing) {
-      // Update last fetched
-      existing.lastFetched = new Date();
-      await existing.save();
-      return existing;
-    }
+    // Optimization: Use atomic findOneAndUpdate with upsert
+    // This reduces DB calls from 2 to 1 and handles race conditions better.
+    // We use runValidators: true to ensure data integrity on updates.
+    return await this.findOneAndUpdate(
+      { source: recipeData.source, externalId: recipeData.externalId },
+      {
+        $set: { lastFetched: new Date() },
+        $setOnInsert: dataToInsert
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+        runValidators: true
+      }
+    );
   }
 
   return await this.create(recipeData);
