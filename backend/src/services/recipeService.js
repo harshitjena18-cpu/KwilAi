@@ -112,7 +112,11 @@ class RecipeService {
       console.log(`Returning ${topRecipes.length} optimized recipes`);
 
       // Step 7: Save to database for caching
-      await this.saveRecipesToDB(topRecipes);
+      // Optimization: Don't await the DB write (fire and forget)
+      // This reduces response time by running caching in background
+      this.saveRecipesToDB(topRecipes).catch(err =>
+        console.error('Background caching error:', err)
+      );
 
       return topRecipes;
     } catch (error) {
