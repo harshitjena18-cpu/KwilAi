@@ -468,16 +468,46 @@ class RecipeService {
    */
   async saveRecipesToDB(recipes) {
     try {
-      const savePromises = recipes.map(async (recipeData) => {
-        try {
-          await Recipe.findOrCreate(recipeData);
-        } catch (error) {
-          console.error('Error saving recipe:', error.message);
-        }
-      });
+      const operations = [];
 
-      await Promise.all(savePromises);
-      console.log(`Saved ${recipes.length} recipes to database`);
+      for (const recipeData of recipes) {
+        try {
+          // Validate the recipe data before saving
+          // This ensures we don't save invalid data to the DB
+          const recipe = new Recipe(recipeData);
+          await recipe.validate();
+
+          if (recipeData.source && recipeData.externalId) {
+            const { lastFetched, ...dataToInsert } = recipeData;
+
+            operations.push({
+              updateOne: {
+                filter: { source: recipeData.source, externalId: recipeData.externalId },
+                update: {
+                  $set: { lastFetched: new Date() },
+                  $setOnInsert: dataToInsert
+                },
+                upsert: true
+              }
+            });
+          } else {
+            operations.push({
+              insertOne: {
+                document: recipeData
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Error validating recipe ${recipeData.title}:`, error.message);
+        }
+      }
+
+      if (operations.length > 0) {
+        // Optimization: Use bulkWrite for efficient batch processing
+        // ordered: false allows other operations to succeed even if one fails
+        const result = await Recipe.bulkWrite(operations, { ordered: false });
+        console.log(`Saved recipes to database: ${result.upsertedCount} upserted, ${result.modifiedCount} modified, ${result.insertedCount} inserted`);
+      }
     } catch (error) {
       console.error('Error saving recipes to DB:', error);
     }
