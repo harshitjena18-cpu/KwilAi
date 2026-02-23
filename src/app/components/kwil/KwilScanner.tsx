@@ -1,3 +1,18 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Camera,
+  X,
+  Zap,
+  Check,
+  Sparkles,
+  Image as ImageIcon,
+  RotateCw,
+  AlertCircle,
+  Edit3,
+  ArrowRight
+} from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilChip } from './KwilChip';
 import { CameraService, compressImage, fileToBase64 } from '../../../utils/camera';
@@ -372,6 +387,7 @@ export default function KwilScanner() {
         <div className="flex items-center justify-between">
           {/* Close Button */}
           <motion.button
+            aria-label="Close scanner"
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(0, 0, 0, 0.5)',
@@ -418,6 +434,7 @@ export default function KwilScanner() {
 
           {/* Flash Toggle */}
           <motion.button
+            aria-label={flashEnabled ? "Disable flash" : "Enable flash"}
             onClick={() => setFlashEnabled(!flashEnabled)}
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
@@ -616,6 +633,7 @@ export default function KwilScanner() {
 
         {/* Gallery Button */}
         <motion.button
+          aria-label="Upload from gallery"
           className="absolute bottom-8 right-6 w-14 h-14 rounded-2xl flex items-center justify-center"
           style={{
             background: 'rgba(0, 0, 0, 0.6)',
@@ -632,6 +650,7 @@ export default function KwilScanner() {
         <motion.button
           onClick={handleCapture}
           disabled={!isCameraReady || isProcessing}
+          aria-label="Capture photo"
           className="absolute bottom-8 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center"
           style={{
             background: isCameraReady && !isProcessing 
@@ -666,6 +685,7 @@ export default function KwilScanner() {
         {/* Switch Camera Button */}
         <motion.button
           onClick={handleSwitchCamera}
+          aria-label="Switch camera"
           className="absolute bottom-8 left-6 w-14 h-14 rounded-2xl flex items-center justify-center"
           style={{
             background: 'rgba(0, 0, 0, 0.6)',
@@ -706,6 +726,7 @@ export default function KwilScanner() {
             {!isScanning && (
               <motion.button
                 onClick={handleRescan}
+                aria-label="Rescan"
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
@@ -971,6 +992,7 @@ export default function KwilScanner() {
             </div>
             <button
               onClick={() => setError('')}
+              aria-label="Dismiss error"
               className="text-white hover:text-gray-200 transition-colors"
             >
               <X size={18} />
