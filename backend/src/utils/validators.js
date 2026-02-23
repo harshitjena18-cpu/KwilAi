@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 
 /**
  * Validation middleware to check for errors
@@ -153,11 +153,52 @@ export const changePasswordValidation = [
     }),
 ];
 
+/**
+ * Recipe search validation rules
+ */
+export const recipeSearchValidation = [
+  query('q')
+    .notEmpty().withMessage('Search query is required')
+    .isString().withMessage('Search query must be a string')
+    .trim(),
+
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100')
+    .toInt(),
+];
+
+/**
+ * Recipe suggestion validation rules
+ */
+export const suggestionValidation = [
+  query('ingredients')
+    .optional()
+    .custom((value) => {
+      if (typeof value === 'string') return true;
+      if (Array.isArray(value)) {
+        return value.every(i => typeof i === 'string');
+      }
+      return false;
+    })
+    .withMessage('Ingredients must be a string or an array of strings'),
+
+  query('dietType').optional().isString().trim(),
+  query('cuisine').optional().isString().trim(),
+  query('healthGoal').optional().isString().trim(),
+  query('budget').optional().isString().trim(),
+  query('maxCalories').optional().isInt({ min: 0 }).toInt(),
+  query('minProtein').optional().isInt({ min: 0 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
+];
+
 export default {
   validate,
   registerValidation,
   loginValidation,
   updateProfileValidation,
   updatePreferencesValidation,
-  changePasswordValidation
+  changePasswordValidation,
+  recipeSearchValidation,
+  suggestionValidation
 };
