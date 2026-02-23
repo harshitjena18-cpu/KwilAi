@@ -36,4 +36,55 @@ describe('User Model', () => {
       expect(user.isSubscriptionActive()).toBe(true);
     });
   });
+
+  describe('hasPremiumAccess', () => {
+    it('should return false if subscription plan is free', () => {
+      const user = new User({ subscriptionPlan: 'free' });
+      expect(user.hasPremiumAccess()).toBe(false);
+    });
+
+    it('should return false if subscription plan is basic', () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+
+      const user = new User({
+        subscriptionPlan: 'basic',
+        subscriptionExpiresAt: futureDate
+      });
+      expect(user.hasPremiumAccess()).toBe(false);
+    });
+
+    it('should return false if subscription plan is premium but expired', () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 1);
+
+      const user = new User({
+        subscriptionPlan: 'premium',
+        subscriptionExpiresAt: pastDate
+      });
+      expect(user.hasPremiumAccess()).toBe(false);
+    });
+
+    it('should return true if subscription plan is premium and active', () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+
+      const user = new User({
+        subscriptionPlan: 'premium',
+        subscriptionExpiresAt: futureDate
+      });
+      expect(user.hasPremiumAccess()).toBe(true);
+    });
+
+    it('should return true if subscription plan is enterprise and active', () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1);
+
+      const user = new User({
+        subscriptionPlan: 'enterprise',
+        subscriptionExpiresAt: futureDate
+      });
+      expect(user.hasPremiumAccess()).toBe(true);
+    });
+  });
 });
