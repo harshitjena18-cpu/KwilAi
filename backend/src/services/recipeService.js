@@ -468,16 +468,63 @@ class RecipeService {
    */
   async saveRecipesToDB(recipes) {
     try {
-      const savePromises = recipes.map(async (recipeData) => {
-        try {
-          await Recipe.findOrCreate(recipeData);
-        } catch (error) {
-          console.error('Error saving recipe:', error.message);
-        }
-      });
+      // Optimization: Use bulkWrite for atomic, efficient batch operations
+      // This reduces database round-trips from N to 1
+      const ops = [];
+      const now = new Date();
 
-      await Promise.all(savePromises);
-      console.log(`Saved ${recipes.length} recipes to database`);
+      for (const recipe of recipes) {
+        // Validate manually before bulk write to ensure data integrity
+        const doc = new Recipe(recipe);
+        const err = doc.validateSync();
+
+        if (err) {
+          console.error(`Validation failed for recipe ${recipe.title}:`, err.message);
+          continue;
+        }
+
+        // Get plain object with defaults applied, without virtuals
+        const validData = doc.toObject({ virtuals: false });
+
+        // Ensure timestamps are set (bulkWrite bypasses mongoose timestamps)
+        validData.updatedAt = now;
+        if (!validData.createdAt) {
+          validData.createdAt = now;
+        }
+
+        if (validData.source && validData.externalId) {
+          // Prepare for updateOne with upsert
+          // We separate fields that should be updated on every match (lastFetched, updatedAt)
+          // from fields that should only be set on insert
+          const { lastFetched, updatedAt, ...dataToInsert } = validData;
+
+          ops.push({
+            updateOne: {
+              filter: { source: validData.source, externalId: validData.externalId },
+              update: {
+                $set: {
+                  lastFetched: now,
+                  updatedAt: now
+                },
+                $setOnInsert: dataToInsert
+              },
+              upsert: true
+            }
+          });
+        } else {
+          // No external ID, just insert
+          ops.push({
+            insertOne: {
+              document: validData
+            }
+          });
+        }
+      }
+
+      if (ops.length > 0) {
+        await Recipe.bulkWrite(ops);
+        console.log(`Saved ${ops.length} recipes to database via bulkWrite`);
+      }
     } catch (error) {
       console.error('Error saving recipes to DB:', error);
     }
