@@ -467,17 +467,56 @@ class RecipeService {
    * @returns {Promise<void>}
    */
   async saveRecipesToDB(recipes) {
+    if (!recipes || recipes.length === 0) return;
+
     try {
-      const savePromises = recipes.map(async (recipeData) => {
-        try {
-          await Recipe.findOrCreate(recipeData);
-        } catch (error) {
-          console.error('Error saving recipe:', error.message);
+      // Optimization: Use bulkWrite for efficient batch processing
+      // This reduces N database round-trips to 1
+      const operations = recipes.map(recipe => {
+        const now = new Date();
+
+        if (recipe.source && recipe.externalId) {
+          const { lastFetched, ...dataToInsert } = recipe;
+
+          return {
+            updateOne: {
+              filter: { source: recipe.source, externalId: recipe.externalId },
+              update: {
+                $set: { lastFetched: now },
+                // Set defaults for new documents only
+                $setOnInsert: {
+                  ...dataToInsert,
+                  createdAt: now,
+                  updatedAt: now,
+                  savedCount: 0,
+                  isActive: true,
+                  reviewCount: 0
+                }
+              },
+              upsert: true
+            }
+          };
+        } else {
+          // For recipes without external ID, we just insert
+          return {
+            insertOne: {
+              document: {
+                ...recipe,
+                createdAt: now,
+                updatedAt: now,
+                savedCount: 0,
+                isActive: true,
+                reviewCount: 0
+              }
+            }
+          };
         }
       });
 
-      await Promise.all(savePromises);
-      console.log(`Saved ${recipes.length} recipes to database`);
+      if (operations.length > 0) {
+        await Recipe.bulkWrite(operations);
+        console.log(`Saved ${recipes.length} recipes to database (bulk)`);
+      }
     } catch (error) {
       console.error('Error saving recipes to DB:', error);
     }
