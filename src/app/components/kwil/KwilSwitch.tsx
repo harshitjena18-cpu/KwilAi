@@ -14,6 +14,7 @@ export function KwilSwitch({
   onChange,
   label,
   className = '',
+  id,
   ...props
 }: KwilSwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);

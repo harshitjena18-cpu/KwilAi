@@ -73,6 +73,7 @@ export default function SearchPage() {
             <KwilChip
               key={filter.id}
               variant={selectedFilters.includes(filter.id) ? 'primary' : 'outline'}
+              selected={selectedFilters.includes(filter.id)}
               onClick={() => toggleFilter(filter.id)}
             >
               {filter.label}
