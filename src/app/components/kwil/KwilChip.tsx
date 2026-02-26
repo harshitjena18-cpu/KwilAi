@@ -6,6 +6,7 @@ interface KwilChipProps {
   icon?: React.ReactNode;
   onRemove?: () => void;
   onClick?: () => void;
+  selected?: boolean;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export function KwilChip({
   icon,
   onRemove,
   onClick,
+  selected,
   className = ''
 }: KwilChipProps) {
   const variants = {
@@ -23,9 +25,16 @@ export function KwilChip({
     outline: 'bg-transparent text-[#FFFFFF] border-white/30'
   };
 
+  // Use button for interactive chips without secondary actions (like remove)
+  // This ensures better accessibility for simple toggle/action chips
+  const Component = onClick && !onRemove ? 'button' : 'div';
+  const isButton = Component === 'button';
+
   return (
-    <div
+    <Component
+      type={isButton ? "button" : undefined}
       onClick={onClick}
+      aria-pressed={isButton ? selected : undefined}
       className={`
         inline-flex items-center gap-2
         px-4 py-2
@@ -35,6 +44,7 @@ export function KwilChip({
         transition-all duration-200
         ${variants[variant]}
         ${onClick ? 'hover:scale-105 cursor-pointer' : ''}
+        ${isButton ? 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]' : ''}
         ${className}
       `}
     >
@@ -42,15 +52,17 @@ export function KwilChip({
       <span>{children}</span>
       {onRemove && (
         <button
+          type="button"
+          aria-label="Remove"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-1 text-current hover:opacity-70"
+          className="ml-1 text-current hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] rounded-full px-1"
         >
           ×
         </button>
       )}
-    </div>
+    </Component>
   );
 }
