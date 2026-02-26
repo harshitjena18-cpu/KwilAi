@@ -192,6 +192,42 @@ export const suggestionValidation = [
   query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
 ];
 
+/**
+ * Voice API validation rules
+ */
+export const voiceValidation = {
+  textToSpeech: [
+    body('text')
+      .notEmpty().withMessage('Text is required')
+      .isString().withMessage('Text must be a string')
+      .isLength({ max: 3000 }).withMessage('Text too long (max 3000 chars)')
+      .trim(),
+    body('languageCode').optional().isString().trim(),
+    body('voiceName').optional().isString().trim(),
+    body('speakingRate').optional().isFloat({ min: 0.25, max: 4.0 }).withMessage('Speaking rate must be between 0.25 and 4.0')
+  ],
+
+  recipeInstructions: [
+    body('steps')
+      .isArray({ min: 1 }).withMessage('Steps array cannot be empty'),
+    body('steps.*.instruction')
+      .exists().withMessage('Instruction is required for each step')
+      .isString().withMessage('Instruction must be a string')
+      .trim(),
+    body('steps.*.number')
+      .optional()
+      .isInt().withMessage('Step number must be an integer')
+  ],
+
+  assistance: [
+    body('query')
+      .notEmpty().withMessage('Query is required')
+      .isString().withMessage('Query must be a string')
+      .isLength({ max: 500 }).withMessage('Query too long (max 500 chars)')
+      .trim()
+  ]
+};
+
 export default {
   validate,
   registerValidation,
@@ -200,5 +236,6 @@ export default {
   updatePreferencesValidation,
   changePasswordValidation,
   recipeSearchValidation,
-  suggestionValidation
+  suggestionValidation,
+  voiceValidation
 };
