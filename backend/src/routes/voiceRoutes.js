@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import voiceController from '../controllers/voiceController.js';
+import { voiceValidation, validate } from '../utils/validators.js';
 
 const router = express.Router();
 
@@ -52,7 +53,7 @@ router.post('/query', upload.single('audio'), voiceController.processVoiceQuery)
  * @body    voiceName (optional): default en-US-Neural2-F
  * @body    speakingRate (optional): default 1.0
  */
-router.post('/text-to-speech', voiceController.textToSpeech);
+router.post('/text-to-speech', voiceValidation.textToSpeech, validate, voiceController.textToSpeech);
 
 /**
  * @route   POST /api/voice/recipe-instructions
@@ -60,7 +61,7 @@ router.post('/text-to-speech', voiceController.textToSpeech);
  * @access  Public
  * @body    steps: array of step objects
  */
-router.post('/recipe-instructions', voiceController.generateRecipeInstructions);
+router.post('/recipe-instructions', voiceValidation.recipeInstructions, validate, voiceController.generateRecipeInstructions);
 
 /**
  * @route   POST /api/voice/assistance
@@ -68,6 +69,6 @@ router.post('/recipe-instructions', voiceController.generateRecipeInstructions);
  * @access  Public
  * @body    query: string
  */
-router.post('/assistance', voiceController.getCookingAssistance);
+router.post('/assistance', voiceValidation.assistance, validate, voiceController.getCookingAssistance);
 
 export default router;
