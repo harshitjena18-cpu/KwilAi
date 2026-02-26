@@ -204,6 +204,7 @@ const recipeSchema = new mongoose.Schema({
 recipeSchema.index({ title: 'text', summary: 'text' });
 recipeSchema.index({ source: 1, externalId: 1 }, { unique: true, sparse: true });
 // Optimized indexes including isActive and sort fields
+recipeSchema.index({ 'ingredients.name': 1 });
 recipeSchema.index({ cuisines: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ diets: 1, isActive: 1, healthScore: -1, savedCount: -1 });
 recipeSchema.index({ healthGoals: 1, isActive: 1, healthScore: -1, savedCount: -1 });
