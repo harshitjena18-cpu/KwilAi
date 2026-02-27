@@ -467,19 +467,57 @@ class RecipeService {
    * @returns {Promise<void>}
    */
   async saveRecipesToDB(recipes) {
+    if (!recipes || recipes.length === 0) return;
+
     try {
-      const savePromises = recipes.map(async (recipeData) => {
-        try {
-          await Recipe.findOrCreate(recipeData);
-        } catch (error) {
-          console.error('Error saving recipe:', error.message);
+      const bulkOps = recipes.map(recipeData => {
+        // Create a temporary instance to apply schema defaults (like isActive, savedCount)
+        const doc = new Recipe(recipeData);
+
+        // Ensure timestamps are set if missing (bulkWrite doesn't do this automatically)
+        const now = new Date();
+        if (!doc.createdAt) doc.createdAt = now;
+        doc.updatedAt = now;
+
+        // Convert to object to get all fields including defaults
+        const docObj = doc.toObject();
+
+        // Remove _id to let MongoDB generate it if inserting new
+        delete docObj._id;
+
+        // Determine operation type
+        if (recipeData.source && recipeData.externalId) {
+          // For external recipes, update or insert (upsert) based on unique ID
+          return {
+            updateOne: {
+              filter: { source: recipeData.source, externalId: recipeData.externalId },
+              update: {
+                $set: {
+                  lastFetched: new Date(),
+                  updatedAt: new Date()
+                },
+                $setOnInsert: docObj
+              },
+              upsert: true
+            }
+          };
+        } else {
+          // For custom/other recipes without external ID, just insert
+          return {
+            insertOne: {
+              document: docObj
+            }
+          };
         }
       });
 
-      await Promise.all(savePromises);
-      console.log(`Saved ${recipes.length} recipes to database`);
+      if (bulkOps.length > 0) {
+        const result = await Recipe.bulkWrite(bulkOps, { ordered: false });
+        console.log(`Saved ${recipes.length} recipes to database (BulkWrite: ${result.upsertedCount + result.insertedCount} new, ${result.modifiedCount} updated)`);
+      }
     } catch (error) {
-      console.error('Error saving recipes to DB:', error);
+      console.error('Error saving recipes to DB (bulkWrite):', error.message);
+      // Fallback: log individual errors if needed, but bulkWrite with ordered:false continues on error
     }
   }
 
