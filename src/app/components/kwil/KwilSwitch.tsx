@@ -14,11 +14,14 @@ export function KwilSwitch({
   onChange,
   label,
   className = '',
+  id: propId,
   ...props
 }: KwilSwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
   const isChecked = controlledChecked !== undefined ? controlledChecked : internalChecked;
   const labelId = useId();
+  const generatedId = useId();
+  const id = propId || generatedId;
 
   const handleToggle = () => {
     const newValue = !isChecked;
