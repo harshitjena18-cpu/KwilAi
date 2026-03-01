@@ -1,0 +1,3 @@
+## 2024-03-01 - Optimizing Pantry Batch Insertions
+**Learning:** Found a recurring N+1 query pattern in `Pantry.create()` operations within loops when processing arrays of ingredients (e.g., in `addBatchIngredients`). While `create` is convenient, it results in multiple individual database roundtrips, significantly impacting backend performance on large payloads.
+**Action:** When adding multiple pantry items simultaneously, map the items to an array of document objects and use `Pantry.insertMany(documents)` instead of iterating with sequential `await Pantry.create()` calls. This executes a single bulk database operation, reducing network overhead and avoiding N+1 bottlenecks.
