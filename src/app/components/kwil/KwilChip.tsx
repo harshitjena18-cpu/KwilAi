@@ -23,9 +23,19 @@ export function KwilChip({
     outline: 'bg-transparent text-[#FFFFFF] border-white/30'
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? handleKeyDown : undefined}
       className={`
         inline-flex items-center gap-2
         px-4 py-2
@@ -34,7 +44,7 @@ export function KwilChip({
         text-sm
         transition-all duration-200
         ${variants[variant]}
-        ${onClick ? 'hover:scale-105 cursor-pointer' : ''}
+        ${onClick ? 'hover:scale-105 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-current' : ''}
         ${className}
       `}
     >
@@ -42,11 +52,12 @@ export function KwilChip({
       <span>{children}</span>
       {onRemove && (
         <button
+          aria-label="Remove"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-1 text-current hover:opacity-70"
+          className="ml-1 text-current hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-full px-1"
         >
           ×
         </button>
