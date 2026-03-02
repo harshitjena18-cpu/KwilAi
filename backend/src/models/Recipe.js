@@ -217,6 +217,9 @@ recipeSchema.index({ isActive: 1, readyInMinutes: 1, healthScore: -1 }); // Opti
 recipeSchema.index({ isActive: 1, pricePerServing: 1, healthScore: -1 }); // Optimized for "Budget" recipes
 recipeSchema.index({ createdAt: -1 });
 
+// Optimize ingredient searches
+recipeSchema.index({ 'ingredients.name': 1 }); // Essential for recipeSearchValidation and suggestionValidation searches
+
 // ===========================
 // VIRTUALS
 // ===========================
