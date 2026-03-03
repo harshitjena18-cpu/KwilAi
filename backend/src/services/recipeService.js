@@ -468,18 +468,63 @@ class RecipeService {
    */
   async saveRecipesToDB(recipes) {
     try {
-      const savePromises = recipes.map(async (recipeData) => {
-        try {
-          await Recipe.findOrCreate(recipeData);
-        } catch (error) {
-          console.error('Error saving recipe:', error.message);
-        }
-      });
+      if (!recipes || recipes.length === 0) return;
 
-      await Promise.all(savePromises);
-      console.log(`Saved ${recipes.length} recipes to database`);
+      const bulkOps = [];
+      const now = new Date();
+
+      for (const recipeData of recipes) {
+        try {
+          // Manually apply schema defaults by instantiating a model
+          const recipeDoc = new Recipe(recipeData);
+
+          // Validate before adding to bulk operations since bulkWrite bypasses schema validation
+          const validationError = recipeDoc.validateSync();
+          if (validationError) {
+            console.error(`Validation failed for recipe ${recipeData.title}:`, validationError.message);
+            continue;
+          }
+
+          // Extract data, excluding _id to prevent modification errors on upsert
+          // Also remove timestamps to prevent MongoDB conflict errors between $set and $setOnInsert
+          const { _id, lastFetched, createdAt, updatedAt, ...dataToInsert } = recipeDoc.toObject();
+
+          if (recipeData.source && recipeData.externalId) {
+            bulkOps.push({
+              updateOne: {
+                filter: { source: recipeData.source, externalId: recipeData.externalId },
+                update: {
+                  $set: { lastFetched: now, updatedAt: now },
+                  $setOnInsert: { ...dataToInsert, createdAt: now }
+                },
+                upsert: true
+              }
+            });
+          } else {
+            bulkOps.push({
+              insertOne: {
+                document: {
+                  ...dataToInsert,
+                  lastFetched: now,
+                  createdAt: now,
+                  updatedAt: now
+                }
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Error preparing bulk op for recipe:`, error.message);
+        }
+      }
+
+      if (bulkOps.length > 0) {
+        // Optimization: Use bulkWrite to replace multiple findOneAndUpdate calls
+        // Reduces N+1 database roundtrips to a single operation
+        const result = await Recipe.bulkWrite(bulkOps, { ordered: false });
+        console.log(`Bulk cached recipes: ${result.upsertedCount} inserted, ${result.modifiedCount} updated`);
+      }
     } catch (error) {
-      console.error('Error saving recipes to DB:', error);
+      console.error('Error saving recipes to DB via bulkWrite:', error);
     }
   }
 
