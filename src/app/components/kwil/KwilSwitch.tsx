@@ -14,11 +14,14 @@ export function KwilSwitch({
   onChange,
   label,
   className = '',
+  id,
   ...props
 }: KwilSwitchProps) {
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
   const isChecked = controlledChecked !== undefined ? controlledChecked : internalChecked;
-  const labelId = useId();
+  const generatedId = useId();
+  const switchId = id || generatedId;
+  const labelId = `${switchId}-label`;
 
   const handleToggle = () => {
     const newValue = !isChecked;
@@ -35,7 +38,7 @@ export function KwilSwitch({
         aria-checked={isChecked}
         aria-labelledby={label ? labelId : undefined}
         onClick={handleToggle}
-        id={id}
+        id={switchId}
         className={`
           relative w-14 h-8 rounded-full transition-all duration-300
           focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]
