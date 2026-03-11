@@ -1,0 +1,3 @@
+## 2024-05-18 - Bulk Insertion for Pantry Items
+**Learning:** Sequential calls to `.create()` in a loop create an N+1 query problem, which severely degrades performance for bulk insertion endpoints like `addBatchIngredients` and `scanAndAddIngredient` when multiple database round-trips are executed.
+**Action:** Always use Mongoose's `insertMany()` when inserting arrays of documents to bundle inserts into a single operation, effectively making it O(1) database trips.
