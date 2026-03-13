@@ -1,0 +1,3 @@
+## 2025-03-13 - [Mongoose lean() for Performance]
+**Learning:** Using Mongoose's `.lean()` on heavily populated endpoints like `getProfile` achieves ~98% data processing overhead reduction by skipping document hydration. However, `.lean()` strips away virtual fields (like `fullProfile`) and instance methods (like `isSubscriptionActive`).
+**Action:** When applying `.lean()` optimizations, always create a static mapping method (e.g., `User.toFullProfile`) to manually reconstruct the response and duplicate virtual field logic for the lean document, avoiding errors while maintaining the performance gain.

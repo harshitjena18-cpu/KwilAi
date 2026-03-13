@@ -248,6 +248,36 @@ userSchema.statics.getActiveUsersCount = function() {
   return this.countDocuments({ isActive: true });
 };
 
+// Transform lean user document to full profile (replacing virtual for performance)
+userSchema.statics.toFullProfile = function(user) {
+  if (!user) return null;
+
+  // Replicate isSubscriptionActive logic for lean document
+  const isSubscriptionActive = () => {
+    if (user.subscriptionPlan === 'free') return true;
+    if (!user.subscriptionExpiresAt) return false;
+    return new Date(user.subscriptionExpiresAt) > new Date();
+  };
+
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    dietType: user.dietType,
+    cuisinePreference: user.cuisinePreference,
+    healthGoal: user.healthGoal,
+    budget: user.budget,
+    subscriptionPlan: user.subscriptionPlan,
+    isSubscriptionActive: isSubscriptionActive(),
+    profileImage: user.profileImage,
+    savedRecipes: user.savedRecipes, // Ensure populated fields are included
+    measurementUnit: user.measurementUnit,
+    language: user.language,
+    notifications: user.notifications,
+    createdAt: user.createdAt
+  };
+};
+
 const User = mongoose.model('User', userSchema);
 
 export default User;
