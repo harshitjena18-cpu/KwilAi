@@ -1,3 +1,7 @@
 ## 2024-05-21 - Custom Switch Accessibility
 **Learning:** Custom switch components implemented as <button> elements often miss the role="switch" and aria-checked attributes, making them confusing for screen reader users who just hear "Button".
 **Action:** Always verify custom interactive elements against WAI-ARIA patterns. For switches, ensure role="switch" and aria-checked are present. Also, ensure external labels are associated via aria-label or aria-labelledby.
+
+## 2024-05-22 - Interactive Div Accessibility
+**Learning:** Custom interactive elements implemented using `div` tags with `onClick` handlers (like chips or cards) completely lack native keyboard support and semantic meaning for screen readers. Users navigating with a keyboard or screen reader are often unable to interact with or even perceive these elements properly. Furthermore, nested interactive elements inside them, like a "remove" icon, need explicit accessible names (e.g., `aria-label`) to provide sufficient context.
+**Action:** When creating custom interactive `div` elements, always include `role="button"`, `tabIndex={0}`, and an `onKeyDown` handler to capture 'Enter' and 'Space' keys. Additionally, ensure proper `focus-visible` styling is applied for visible focus indication, and provide clear `aria-label`s for any nested actionable elements (like a removal icon) derived from the parent element's content if possible.
