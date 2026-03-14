@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid Unnecessary Array Populate When Only Count Needed
+**Learning:** In Mongoose, using `.populate()` on an array of ObjectIds (like `savedRecipes`) just to get the length (`user.savedRecipes.length`) is a major performance bottleneck. It forces MongoDB to perform an expensive `$lookup` (loading full documents into memory) when the length of the original array of IDs is exactly the same and sufficient.
+**Action:** Always check how a populated field is being used. If only the `.length` is needed (for stats, counts, etc.), remove the `.populate()` call to drastically reduce memory overhead and database query time.
