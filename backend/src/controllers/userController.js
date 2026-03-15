@@ -186,8 +186,10 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // ⚡ Bolt Optimization: Removed .populate('savedRecipes')
+  // We only need the length of the array for totalSavedRecipes, so populating the full
+  // recipe documents creates unnecessary database $lookup overhead and memory usage.
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
