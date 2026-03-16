@@ -100,13 +100,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
+  const itemsToCreate = [];
 
   for (const item of ingredients) {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToCreate.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -116,9 +116,11 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       detectionConfidence: item.confidence,
       notes: item.notes
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Bolt Optimization: Use insertMany instead of sequential create() in a loop
+  // This avoids N+1 query patterns, turning O(n) database operations into O(1) bulk insert
+  const pantryItems = await Pantry.insertMany(itemsToCreate);
 
   res.status(201).json({
     success: true,
@@ -402,7 +404,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
+  const itemsToCreate = [];
 
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
@@ -411,7 +413,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
     const category = visionService.categorizeIngredient(item.name);
     const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToCreate.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: { value: null, unit: null },
@@ -419,9 +421,11 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
       category,
       detectionConfidence: item.confidence
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Bolt Optimization: Use insertMany instead of sequential create() in a loop
+  // This avoids N+1 query patterns, turning O(n) database operations into O(1) bulk insert
+  const pantryItems = await Pantry.insertMany(itemsToCreate);
 
   res.status(201).json({
     success: true,
