@@ -1,0 +1,3 @@
+## 2024-05-20 - Unnecessary Array Populating in Mongoose
+**Learning:** Found a performance bottleneck in `getUserStats` where Mongoose `.populate('savedRecipes')` was being called on an array of ObjectIds, but the result was only used to calculate the array's length (`user.savedRecipes?.length`). This triggers an expensive and unnecessary MongoDB `$lookup` operation, loading full recipe documents into memory just to count them.
+**Action:** Avoid calling `.populate()` on arrays of ObjectIds if downstream logic only requires the array's length. The array of ObjectIds already has the correct length without needing to resolve the referenced documents.
