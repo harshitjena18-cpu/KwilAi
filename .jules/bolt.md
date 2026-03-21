@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid populating arrays for length queries
+**Learning:** Using `.populate()` on large arrays of references (like `savedRecipes`) when only the array's length is needed causes a massive performance hit due to unnecessary `$lookup` operations and loading large documents into memory. Mongoose returns the length of unpopulated ObjectIds natively.
+**Action:** Always check how a populated field is used. If only its length or presence is needed, remove the `.populate()` call to save database bandwidth and memory overhead.
