@@ -7,13 +7,15 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  * @access  Private
  */
 export const getProfile = asyncHandler(async (req, res) => {
+  // Use .lean() to bypass Mongoose document hydration for read-only ops, reducing memory and processing overhead
   const user = await User.findById(req.user.id)
     .populate('savedRecipes', 'title image cookTime difficulty')
-    .select('-password');
+    .select('-password')
+    .lean();
 
   res.status(200).json({
     success: true,
-    user: user.fullProfile
+    user: User.toFullProfile(user)
   });
 });
 

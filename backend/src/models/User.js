@@ -243,6 +243,36 @@ userSchema.statics.findByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase() });
 };
 
+// Manually transform lean user document to full profile
+userSchema.statics.toFullProfile = function(user) {
+  if (!user) return null;
+
+  // Replicate isSubscriptionActive logic for lean objects
+  const isSubscriptionActive = () => {
+    if (user.subscriptionPlan === 'free') return true;
+    if (!user.subscriptionExpiresAt) return false;
+    return new Date(user.subscriptionExpiresAt) > new Date();
+  };
+
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    dietType: user.dietType,
+    cuisinePreference: user.cuisinePreference,
+    healthGoal: user.healthGoal,
+    budget: user.budget,
+    subscriptionPlan: user.subscriptionPlan,
+    isSubscriptionActive: isSubscriptionActive(),
+    profileImage: user.profileImage,
+    savedRecipes: user.savedRecipes, // Included from populate
+    measurementUnit: user.measurementUnit,
+    language: user.language,
+    notifications: user.notifications,
+    createdAt: user.createdAt
+  };
+};
+
 // Get active users count
 userSchema.statics.getActiveUsersCount = function() {
   return this.countDocuments({ isActive: true });
