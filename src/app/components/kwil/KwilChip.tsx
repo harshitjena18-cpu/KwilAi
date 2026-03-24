@@ -23,9 +23,21 @@ export function KwilChip({
     outline: 'bg-transparent text-[#FFFFFF] border-white/30'
   };
 
+  const isInteractive = !!onClick;
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
       className={`
         inline-flex items-center gap-2
         px-4 py-2
@@ -33,12 +45,13 @@ export function KwilChip({
         border
         text-sm
         transition-all duration-200
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]
         ${variants[variant]}
-        ${onClick ? 'hover:scale-105 cursor-pointer' : ''}
+        ${isInteractive ? 'hover:scale-105 cursor-pointer' : ''}
         ${className}
       `}
     >
-      {icon && <span className="text-current">{icon}</span>}
+      {icon && <span className="text-current" aria-hidden="true">{icon}</span>}
       <span>{children}</span>
       {onRemove && (
         <button
@@ -46,9 +59,11 @@ export function KwilChip({
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-1 text-current hover:opacity-70"
+          onKeyDown={(e) => e.stopPropagation()}
+          aria-label={`Remove ${typeof children === 'string' ? children : 'item'}`}
+          className="ml-1 text-current hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded-full px-1"
         >
-          ×
+          <span aria-hidden="true">×</span>
         </button>
       )}
     </div>
