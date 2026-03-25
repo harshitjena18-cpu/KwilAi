@@ -1,3 +1,7 @@
 ## 2024-05-21 - Custom Switch Accessibility
 **Learning:** Custom switch components implemented as <button> elements often miss the role="switch" and aria-checked attributes, making them confusing for screen reader users who just hear "Button".
 **Action:** Always verify custom interactive elements against WAI-ARIA patterns. For switches, ensure role="switch" and aria-checked are present. Also, ensure external labels are associated via aria-label or aria-labelledby.
+
+## 2025-02-13 - Focus Visible Propagation on Custom Interactive Components
+**Learning:** When building custom interactive components like `KwilChip` that contain nested native buttons (like a remove button), using `focus-visible` states requires careful consideration. Because native buttons absorb focus when clicked but custom `div` elements acting as buttons need explicit `tabIndex={0}`, keyboard navigation requires distinct handling for each to avoid dual-activation or confusing focus states. Also, `e.stopPropagation()` on the nested element's `onKeyDown` is crucial to prevent the outer `div`'s click handler from firing when the inner button is activated via keyboard.
+**Action:** When creating custom interactive elements with nested controls, always add independent `focus-visible` styles to both the outer container and inner controls, and explicitly stop keydown propagation on the inner controls for 'Enter' and 'Space' to prevent duplicate execution.
