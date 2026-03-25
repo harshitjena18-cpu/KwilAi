@@ -1,0 +1,4 @@
+💡 What: Removed `.populate('savedRecipes')` from `getUserStats` controller in `backend/src/controllers/userController.js`.
+🎯 Why: Because Mongoose stores references as arrays of ObjectIds, the `.length` of the array is already available on the unpopulated document (`totalSavedRecipes: user.savedRecipes?.length || 0`). Calling `.populate()` was triggering a completely unnecessary and expensive database `$lookup` to fetch the entire saved recipe documents when only the count was needed.
+📊 Impact: Saves memory overhead and skips an expensive database `$lookup` operation for every `getUserStats` call.
+🔬 Measurement: Verified that tests (`tests/models/User.test.js`, `tests/validators.test.js`, `tests/security_validators.test.js`) still pass, confirming that application logic has not been negatively impacted.
