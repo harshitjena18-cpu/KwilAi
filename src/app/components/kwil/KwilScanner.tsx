@@ -26,6 +26,27 @@ interface DetectedItem {
   emoji: string;
 }
 
+// ⚡ Bolt Performance Optimization:
+// Hoisted static arrays and objects to module level to prevent redundant
+// allocations and garbage collection overhead during component render cycles.
+const CATEGORY_VEGETABLES = ['tomato', 'potato', 'onion', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cabbage'];
+const CATEGORY_FRUITS = ['apple', 'banana', 'orange', 'grape', 'strawberry', 'mango'];
+const CATEGORY_PROTEIN = ['chicken', 'beef', 'pork', 'fish', 'egg'];
+const CATEGORY_DAIRY = ['milk', 'cheese', 'yogurt', 'butter'];
+
+const INGREDIENT_EMOJI_MAP: { [key: string]: string } = {
+  tomato: '🍅', potato: '🥔', onion: '🧅', carrot: '🥕', broccoli: '🥦',
+  spinach: '🥬', lettuce: '🥬', cabbage: '🥬', pepper: '🫑',
+  apple: '🍎', banana: '🍌', orange: '🍊', grape: '🍇', strawberry: '🍓',
+  mango: '🥭', pineapple: '🍍', watermelon: '🍉', lemon: '🍋',
+  chicken: '🍗', beef: '🥩', pork: '🥓', fish: '🐟', egg: '🥚',
+  milk: '🥛', cheese: '🧀', yogurt: '🥛', butter: '🧈',
+  rice: '🍚', bread: '🍞', pasta: '🍝', noodle: '🍜',
+};
+
+// Pre-calculate entries to avoid Object.entries() on every lookup
+const INGREDIENT_EMOJI_ENTRIES = Object.entries(INGREDIENT_EMOJI_MAP);
+
 export default function KwilScanner() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -162,16 +183,16 @@ export default function KwilScanner() {
   const getCategoryFromName = (name: string): string => {
     const lowerName = name.toLowerCase();
     
-    if (['tomato', 'potato', 'onion', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cabbage'].some(v => lowerName.includes(v))) {
+    if (CATEGORY_VEGETABLES.some(v => lowerName.includes(v))) {
       return 'Vegetables';
     }
-    if (['apple', 'banana', 'orange', 'grape', 'strawberry', 'mango'].some(f => lowerName.includes(f))) {
+    if (CATEGORY_FRUITS.some(f => lowerName.includes(f))) {
       return 'Fruits';
     }
-    if (['chicken', 'beef', 'pork', 'fish', 'egg'].some(m => lowerName.includes(m))) {
+    if (CATEGORY_PROTEIN.some(m => lowerName.includes(m))) {
       return 'Protein';
     }
-    if (['milk', 'cheese', 'yogurt', 'butter'].some(d => lowerName.includes(d))) {
+    if (CATEGORY_DAIRY.some(d => lowerName.includes(d))) {
       return 'Dairy';
     }
     return 'Other';
@@ -180,18 +201,8 @@ export default function KwilScanner() {
   // Helper to get emoji for ingredient
   const getEmojiForIngredient = (name: string): string => {
     const lowerName = name.toLowerCase();
-    
-    const emojiMap: { [key: string]: string } = {
-      tomato: '🍅', potato: '🥔', onion: '🧅', carrot: '🥕', broccoli: '🥦',
-      spinach: '🥬', lettuce: '🥬', cabbage: '🥬', pepper: '🫑',
-      apple: '🍎', banana: '🍌', orange: '🍊', grape: '🍇', strawberry: '🍓',
-      mango: '🥭', pineapple: '🍍', watermelon: '🍉', lemon: '🍋',
-      chicken: '🍗', beef: '🥩', pork: '🥓', fish: '🐟', egg: '🥚',
-      milk: '🥛', cheese: '🧀', yogurt: '🥛', butter: '🧈',
-      rice: '🍚', bread: '🍞', pasta: '🍝', noodle: '🍜',
-    };
 
-    for (const [key, emoji] of Object.entries(emojiMap)) {
+    for (const [key, emoji] of INGREDIENT_EMOJI_ENTRIES) {
       if (lowerName.includes(key)) return emoji;
     }
 
