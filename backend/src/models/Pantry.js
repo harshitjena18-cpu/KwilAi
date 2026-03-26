@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { escapeRegExp } from '../utils/securityUtils.js';
 
 const pantrySchema = new mongoose.Schema({
   userId: {
@@ -176,10 +177,12 @@ pantrySchema.statics.getByCategory = function(userId, category) {
 
 // Search ingredients by name
 pantrySchema.statics.searchByName = function(userId, searchTerm) {
+  // Prevent ReDoS and NoSQL injection attacks by escaping regex characters
+  const safeSearchTerm = escapeRegExp(searchTerm);
   return this.find({
     userId,
     isConsumed: false,
-    ingredientName: { $regex: searchTerm, $options: 'i' }
+    ingredientName: { $regex: safeSearchTerm, $options: 'i' }
   }).sort({ createdAt: -1 });
 };
 
