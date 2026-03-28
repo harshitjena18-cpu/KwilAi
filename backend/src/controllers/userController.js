@@ -186,8 +186,8 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // ⚡ Bolt: Removed expensive .populate('savedRecipes') as only the array length is needed for stats
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
