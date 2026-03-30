@@ -245,32 +245,41 @@ class RecipeService {
   filterRecipes(recipes, filters) {
     const { dietType, healthGoal, budget, maxCalories, minProtein } = filters;
 
+    // Optimization: Hoist string manipulations and object creations out of the filter loop.
+    // This prevents redundant `.toLowerCase()` calls and object instantiations on every iteration.
+    const lowerDietType = dietType?.toLowerCase();
+    const lowerHealthGoal = healthGoal?.toLowerCase();
+
+    let maxPrice = null;
+    if (budget) {
+      const budgetMap = {
+        'low': 300,      // $3
+        'medium': 600,   // $6
+        'high': 1000     // $10
+      };
+      maxPrice = budgetMap[budget.toLowerCase()] || 600;
+    }
+
     return recipes.filter(recipe => {
       // Diet filter
-      if (dietType && recipe.diets && !recipe.diets.includes(dietType.toLowerCase())) {
+      if (lowerDietType && recipe.diets && !recipe.diets.includes(lowerDietType)) {
         return false;
       }
 
       // Health goal filter
-      if (healthGoal && recipe.healthGoals && !recipe.healthGoals.includes(healthGoal.toLowerCase())) {
+      if (lowerHealthGoal && recipe.healthGoals && !recipe.healthGoals.includes(lowerHealthGoal)) {
         // Be flexible - if no specific health goals, check nutrition
-        if (healthGoal === 'weight-loss' && recipe.nutrition?.calories) {
+        if (lowerHealthGoal === 'weight-loss' && recipe.nutrition?.calories) {
           const cals = recipe.nutrition.calories / (recipe.servings || 1);
           if (cals > 500) return false;
-        } else if (healthGoal === 'high-protein' && recipe.nutrition?.protein) {
+        } else if (lowerHealthGoal === 'high-protein' && recipe.nutrition?.protein) {
           const protein = recipe.nutrition.protein / (recipe.servings || 1);
           if (protein < 20) return false;
         }
       }
 
       // Budget filter (if price available)
-      if (budget && recipe.pricePerServing) {
-        const budgetMap = {
-          'low': 300,      // $3
-          'medium': 600,   // $6
-          'high': 1000     // $10
-        };
-        const maxPrice = budgetMap[budget.toLowerCase()] || 600;
+      if (maxPrice !== null && recipe.pricePerServing) {
         if (recipe.pricePerServing > maxPrice) {
           return false;
         }
@@ -301,6 +310,10 @@ class RecipeService {
   optimizeRecipes(recipes, preferences) {
     const { healthGoal, budget, ingredients = [] } = preferences;
 
+    // Optimization: Cache lowercase version of user ingredients to prevent repeated String.toLowerCase()
+    // inside the nested loops of recipe.ingredients filtering.
+    const lowerUserIngredients = ingredients.length > 0 ? ingredients.map(ing => ing.toLowerCase()) : [];
+
     return recipes.map(recipe => {
       let score = recipe.healthScore || 50;
 
@@ -310,13 +323,18 @@ class RecipeService {
 
       // 1. INGREDIENT MATCH PERCENTAGE (0-30 points)
       // Higher score for better ingredient matches
-      if (ingredients.length > 0 && recipe.ingredients) {
-        const matchedIngredients = recipe.ingredients.filter(ing =>
-          ingredients.some(userIng => 
-            ing.name.toLowerCase().includes(userIng.toLowerCase()) ||
-            userIng.toLowerCase().includes(ing.name.toLowerCase())
-          )
-        ).length;
+      if (lowerUserIngredients.length > 0 && recipe.ingredients) {
+        let matchedIngredients = 0;
+        for (let i = 0; i < recipe.ingredients.length; i++) {
+          const lowerIngName = recipe.ingredients[i].name.toLowerCase();
+          for (let j = 0; j < lowerUserIngredients.length; j++) {
+            const userIng = lowerUserIngredients[j];
+            if (lowerIngName.includes(userIng) || userIng.includes(lowerIngName)) {
+              matchedIngredients++;
+              break; // Stop checking other user ingredients for this recipe ingredient
+            }
+          }
+        }
 
         const ingredientMatchPercentage = matchedIngredients / Math.max(ingredients.length, 1);
         const ingredientScore = ingredientMatchPercentage * 30; // Up to 30 points
