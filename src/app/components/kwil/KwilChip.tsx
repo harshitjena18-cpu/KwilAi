@@ -47,6 +47,7 @@ export function KwilChip({
             onRemove();
           }}
           className="ml-1 text-current hover:opacity-70"
+          aria-label="Remove"
         >
           ×
         </button>
