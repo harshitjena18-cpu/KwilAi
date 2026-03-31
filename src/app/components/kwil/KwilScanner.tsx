@@ -26,6 +26,40 @@ interface DetectedItem {
   emoji: string;
 }
 
+const VEGETABLE_KEYWORDS = ['tomato', 'potato', 'onion', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cabbage'];
+const FRUIT_KEYWORDS = ['apple', 'banana', 'orange', 'grape', 'strawberry', 'mango'];
+const PROTEIN_KEYWORDS = ['chicken', 'beef', 'pork', 'fish', 'egg'];
+const DAIRY_KEYWORDS = ['milk', 'cheese', 'yogurt', 'butter'];
+
+const getCategoryFromName = (name: string): string => {
+  const lowerName = name.toLowerCase();
+
+  if (VEGETABLE_KEYWORDS.some(v => lowerName.includes(v))) return 'Vegetables';
+  if (FRUIT_KEYWORDS.some(f => lowerName.includes(f))) return 'Fruits';
+  if (PROTEIN_KEYWORDS.some(m => lowerName.includes(m))) return 'Protein';
+  if (DAIRY_KEYWORDS.some(d => lowerName.includes(d))) return 'Dairy';
+
+  return 'Other';
+};
+
+const INGREDIENT_EMOJI_ENTRIES = Object.entries({
+  tomato: '🍅', potato: '🥔', onion: '🧅', carrot: '🥕', broccoli: '🥦',
+  spinach: '🥬', lettuce: '🥬', cabbage: '🥬', pepper: '🫑',
+  apple: '🍎', banana: '🍌', orange: '🍊', grape: '🍇', strawberry: '🍓',
+  mango: '🥭', pineapple: '🍍', watermelon: '🍉', lemon: '🍋',
+  chicken: '🍗', beef: '🥩', pork: '🥓', fish: '🐟', egg: '🥚',
+  milk: '🥛', cheese: '🧀', yogurt: '🥛', butter: '🧈',
+  rice: '🍚', bread: '🍞', pasta: '🍝', noodle: '🍜',
+});
+
+const getEmojiForIngredient = (name: string): string => {
+  const lowerName = name.toLowerCase();
+  for (const [key, emoji] of INGREDIENT_EMOJI_ENTRIES) {
+    if (lowerName.includes(key)) return emoji;
+  }
+  return '🥘';
+};
+
 export default function KwilScanner() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -156,46 +190,6 @@ export default function KwilScanner() {
       setIsScanning(false);
       setIsProcessing(false);
     }
-  };
-
-  // Helper to get category from ingredient name
-  const getCategoryFromName = (name: string): string => {
-    const lowerName = name.toLowerCase();
-    
-    if (['tomato', 'potato', 'onion', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cabbage'].some(v => lowerName.includes(v))) {
-      return 'Vegetables';
-    }
-    if (['apple', 'banana', 'orange', 'grape', 'strawberry', 'mango'].some(f => lowerName.includes(f))) {
-      return 'Fruits';
-    }
-    if (['chicken', 'beef', 'pork', 'fish', 'egg'].some(m => lowerName.includes(m))) {
-      return 'Protein';
-    }
-    if (['milk', 'cheese', 'yogurt', 'butter'].some(d => lowerName.includes(d))) {
-      return 'Dairy';
-    }
-    return 'Other';
-  };
-
-  // Helper to get emoji for ingredient
-  const getEmojiForIngredient = (name: string): string => {
-    const lowerName = name.toLowerCase();
-    
-    const emojiMap: { [key: string]: string } = {
-      tomato: '🍅', potato: '🥔', onion: '🧅', carrot: '🥕', broccoli: '🥦',
-      spinach: '🥬', lettuce: '🥬', cabbage: '🥬', pepper: '🫑',
-      apple: '🍎', banana: '🍌', orange: '🍊', grape: '🍇', strawberry: '🍓',
-      mango: '🥭', pineapple: '🍍', watermelon: '🍉', lemon: '🍋',
-      chicken: '🍗', beef: '🥩', pork: '🥓', fish: '🐟', egg: '🥚',
-      milk: '🥛', cheese: '🧀', yogurt: '🥛', butter: '🧈',
-      rice: '🍚', bread: '🍞', pasta: '🍝', noodle: '🍜',
-    };
-
-    for (const [key, emoji] of Object.entries(emojiMap)) {
-      if (lowerName.includes(key)) return emoji;
-    }
-
-    return '🥘';
   };
 
   const handleRescan = () => {
