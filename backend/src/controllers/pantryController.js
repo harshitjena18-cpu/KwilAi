@@ -100,13 +100,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
+  const itemsToInsert = [];
 
   for (const item of ingredients) {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToInsert.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -116,9 +116,11 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       detectionConfidence: item.confidence,
       notes: item.notes
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Optimization: Use insertMany instead of creating items one by one in a loop.
+  // This reduces the number of database roundtrips from N to 1, significantly improving performance for batch operations.
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
@@ -402,7 +404,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
+  const itemsToInsert = [];
 
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
@@ -411,7 +413,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
     const category = visionService.categorizeIngredient(item.name);
     const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToInsert.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: { value: null, unit: null },
@@ -419,9 +421,11 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
       category,
       detectionConfidence: item.confidence
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Optimization: Use insertMany instead of sequential creates inside a loop.
+  // This reduces multiple database roundtrips into a single bulk insert operation, improving batch addition performance.
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
