@@ -100,6 +100,7 @@ export default function KwilShoppingList() {
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
+            aria-label="Go back"
           >
             <ArrowLeft size={20} className="text-white" />
           </button>
