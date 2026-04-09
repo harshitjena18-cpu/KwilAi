@@ -2,3 +2,8 @@
 **Vulnerability:** The `getSuggestions` endpoint crashed when `ingredients` query parameter was passed as an object (e.g., `?ingredients[foo]=bar`). The code assumed `ingredients` was a string or array of strings, but `express` query parser (via `qs`) parses `ingredients[foo]=bar` as `{ ingredients: { foo: 'bar' } }`. This caused `ingredients.split(',')` to throw `TypeError: ingredients.split is not a function`, leading to a 500 error and potential DoS if abused.
 **Learning:** Express `req.query` parsing is flexible and can return Objects where Strings are expected. `mongoSanitize` middleware only removes `$` and `.` keys but does not validate types. Input validation libraries like `express-validator` are essential not just for data format, but for strict type enforcement to prevent Type Confusion attacks.
 **Prevention:** Always validate the TYPE of input parameters before using them. Use `express-validator`'s `isString()` or custom validators to ensure query parameters are of the expected type.
+
+## 2024-04-09 - ReDoS and NoSQL Injection via Unsanitized Regex Inputs
+**Vulnerability:** User-controlled strings passed directly to Mongoose's `$regex` operator (in `Pantry.js`) and `new RegExp` (in `Recipe.js`) without sanitization allow for Regular Expression Denial of Service (ReDoS) and potential NoSQL injection.
+**Learning:** Mongoose does not automatically escape strings used in regular expressions. Failing to do so exposes the application to severe DoS risks when specially crafted regex strings are passed via search terms.
+**Prevention:** Always sanitize any user-controlled input using a utility like `escapeRegExp` that escapes regex control characters and validates the input type before passing it to `$regex` or `new RegExp`.
