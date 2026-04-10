@@ -100,13 +100,15 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
+  // Optimization: Prepare array and use insertMany instead of sequential creates
+  // This reduces N database calls to a single bulk insert operation
+  const pantryItemsData = [];
 
   for (const item of ingredients) {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    pantryItemsData.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -116,9 +118,9 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       detectionConfidence: item.confidence,
       notes: item.notes
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  const pantryItems = await Pantry.insertMany(pantryItemsData);
 
   res.status(201).json({
     success: true,
@@ -402,7 +404,9 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
+  // Optimization: Prepare array and use insertMany instead of sequential creates
+  // This reduces N database calls to a single bulk insert operation
+  const pantryItemsData = [];
 
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
@@ -411,7 +415,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
     const category = visionService.categorizeIngredient(item.name);
     const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    pantryItemsData.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: { value: null, unit: null },
@@ -419,9 +423,9 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
       category,
       detectionConfidence: item.confidence
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  const pantryItems = await Pantry.insertMany(pantryItemsData);
 
   res.status(201).json({
     success: true,
