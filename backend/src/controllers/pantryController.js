@@ -100,13 +100,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
+  const itemsToInsert = [];
 
   for (const item of ingredients) {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToInsert.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -116,9 +116,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       detectionConfidence: item.confidence,
       notes: item.notes
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Bolt: Performance optimization
+  // Replaced sequential Pantry.create() loop with a single Pantry.insertMany() call.
+  // This batches database inserts into a single operation, eliminating N+1 query overhead
+  // and significantly improving performance for multi-item additions.
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
@@ -402,7 +406,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
+  const itemsToInsert = [];
 
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
@@ -411,7 +415,7 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
     const category = visionService.categorizeIngredient(item.name);
     const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    itemsToInsert.push({
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: { value: null, unit: null },
@@ -419,9 +423,13 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
       category,
       detectionConfidence: item.confidence
     });
-
-    pantryItems.push(pantryItem);
   }
+
+  // ⚡ Bolt: Performance optimization
+  // Replaced sequential Pantry.create() loop with Pantry.insertMany().
+  // This batches database inserts into a single network request, avoiding multiple round-trips
+  // to the database and improving latency when processing bulk ingredient insertions.
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
