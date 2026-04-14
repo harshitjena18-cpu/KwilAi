@@ -1,0 +1,3 @@
+## 2024-04-14 - MongoDB Batch Inserts Without Hooks
+**Learning:** In the backend, sequential `Pantry.create()` operations for batch imports or multi-scans cause a significant N+1 database roundtrip bottleneck. We can safely replace them with `Pantry.insertMany()` to perform bulk inserts because the `Pantry` model does not utilize Mongoose `pre('save')` middleware, which `insertMany` inherently bypasses.
+**Action:** Always verify target models for `pre('save')` hooks before converting `create()` loops to `insertMany()`. Apply `insertMany()` for any batch creation endpoints (like `addBatchIngredients` and `scanAndAddIngredient`) to drastically reduce DB latency.
