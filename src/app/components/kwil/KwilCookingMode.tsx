@@ -264,6 +264,7 @@ export default function KwilCookingMode({
         <div className="flex items-center justify-between mb-6">
           {/* Exit Button */}
           <motion.button
+            aria-label="Exit cooking mode"
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
@@ -288,6 +289,7 @@ export default function KwilCookingMode({
 
           {/* Sound Toggle */}
           <motion.button
+            aria-label="Toggle sound"
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
@@ -404,6 +406,7 @@ export default function KwilCookingMode({
                 {/* Timer Controls */}
                 <div className="flex items-center justify-center gap-3">
                   <motion.button
+                    aria-label="Toggle timer"
                     onClick={toggleTimer}
                     className="w-14 h-14 rounded-full flex items-center justify-center"
                     style={{
@@ -423,6 +426,7 @@ export default function KwilCookingMode({
                   </motion.button>
 
                   <motion.button
+                    aria-label="Reset timer"
                     onClick={resetTimer}
                     className="w-14 h-14 rounded-full flex items-center justify-center"
                     style={{
@@ -475,6 +479,7 @@ export default function KwilCookingMode({
         <div className="flex items-center justify-between gap-4">
           {/* Previous Button */}
           <motion.button
+            aria-label="Previous step"
             onClick={goToPreviousStep}
             disabled={currentStepIndex === 0}
             className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -493,6 +498,7 @@ export default function KwilCookingMode({
 
           {/* Voice Assistant Button */}
           <motion.button
+            aria-label="Toggle voice assistant"
             onClick={toggleVoiceAssistant}
             className="relative w-24 h-24 rounded-full flex items-center justify-center"
             style={{
@@ -545,6 +551,7 @@ export default function KwilCookingMode({
 
           {/* Next Button */}
           <motion.button
+            aria-label="Next step"
             onClick={goToNextStep}
             disabled={currentStepIndex === totalSteps - 1}
             className="w-16 h-16 rounded-full flex items-center justify-center"
