@@ -156,10 +156,11 @@ class SpoonacularService {
   parseRecipe(spoonacularRecipe) {
     try {
       // Extract nutrition data
+      // ⚡ Bolt Optimization: Map-based lookup for O(1) performance instead of multiple O(N) array finds
       const nutrition = spoonacularRecipe.nutrition?.nutrients || [];
+      const nutrientMap = new Map(nutrition.map(n => [n.name, n.amount]));
       const getNutrient = (name) => {
-        const nutrient = nutrition.find(n => n.name === name);
-        return nutrient ? nutrient.amount : null;
+        return nutrientMap.has(name) ? nutrientMap.get(name) : null;
       };
 
       // Parse ingredients
