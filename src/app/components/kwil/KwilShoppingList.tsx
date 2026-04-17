@@ -295,6 +295,7 @@ export default function KwilShoppingList() {
                         {/* Checkbox */}
                         <button
                           onClick={() => toggleItem(item.id)}
+                          aria-label={`Toggle ${item.name}`}
                           className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
                           style={{
                             background: item.checked 
@@ -342,6 +343,7 @@ export default function KwilShoppingList() {
                         {/* Delete Button */}
                         <button
                           onClick={() => deleteItem(item.id)}
+                          aria-label={`Delete ${item.name}`}
                           className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
