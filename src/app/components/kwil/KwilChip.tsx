@@ -42,11 +42,12 @@ export function KwilChip({
       <span>{children}</span>
       {onRemove && (
         <button
+          aria-label="Remove"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-1 text-current hover:opacity-70"
+          className="ml-1 text-current hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded"
         >
           ×
         </button>
