@@ -156,11 +156,17 @@ class SpoonacularService {
   parseRecipe(spoonacularRecipe) {
     try {
       // Extract nutrition data
-      const nutrition = spoonacularRecipe.nutrition?.nutrients || [];
-      const getNutrient = (name) => {
-        const nutrient = nutrition.find(n => n.name === name);
-        return nutrient ? nutrient.amount : null;
-      };
+      const nutritionArray = spoonacularRecipe.nutrition?.nutrients || [];
+
+      // ⚡ BOLT: Optimize nutrient lookups from O(N) to O(1)
+      // When extracting 6+ different nutrients from a potentially large array,
+      // creating a Map first turns O(N*M) search operations into O(N+M).
+      const nutrientMap = new Map();
+      for (const n of nutritionArray) {
+        nutrientMap.set(n.name, n.amount);
+      }
+
+      const getNutrient = (name) => nutrientMap.get(name) ?? null;
 
       // Parse ingredients
       const ingredients = (spoonacularRecipe.extendedIngredients || []).map(ing => ({
