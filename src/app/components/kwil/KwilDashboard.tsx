@@ -436,6 +436,7 @@ export default function KwilDashboard() {
             <div className="flex items-center justify-between">
               <h4 className="text-white font-medium">Recommended for You</h4>
               <button 
+                aria-label="See all recommended recipes"
                 className="text-[#00FF9C] text-sm"
                 onClick={() => navigate('/app/recipes')}
               >
@@ -525,6 +526,7 @@ export default function KwilDashboard() {
             <div className="flex items-center justify-between">
               <h4 className="text-white font-medium">Today's Goals</h4>
               <button 
+                aria-label="View health details"
                 className="text-[#00FF9C] text-sm"
                 onClick={() => navigate('/app/health')}
               >
