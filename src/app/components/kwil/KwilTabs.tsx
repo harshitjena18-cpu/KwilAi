@@ -28,12 +28,17 @@ export function KwilTabs({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="flex gap-2 p-1 bg-white/5 backdrop-blur-md rounded-full border border-[#00FF9C]/10">
+      <div
+        role="tablist"
+        className="flex gap-2 p-1 bg-white/5 backdrop-blur-md rounded-full border border-[#00FF9C]/10"
+      >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => handleTabClick(tab.id)}
               className={`
                 flex-1 flex items-center justify-center gap-2
