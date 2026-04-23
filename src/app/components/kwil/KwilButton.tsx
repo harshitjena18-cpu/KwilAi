@@ -19,7 +19,7 @@ export function KwilButton({
   disabled,
   ...props 
 }: KwilButtonProps) {
-  const baseStyles = "relative rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2";
+  const baseStyles = "relative rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]";
   
   const variants = {
     primary: `bg-gradient-to-r from-[#00FF9C] to-[#10B981] text-[#050B08] 
