@@ -185,18 +185,31 @@ pantrySchema.statics.searchByName = function(userId, searchTerm) {
 
 // Get pantry statistics
 pantrySchema.statics.getStats = async function(userId) {
-  const [totalActive, totalConsumed, expiringSoon, expired] = await Promise.all([
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 3);
+
+  // ⚡ Bolt Optimization: Replaced this.getExpiringSoon().length and this.getExpired().length
+  // which load full documents into memory, with database-level countDocuments() for O(1) memory overhead.
+  const [totalActive, totalConsumed, expiringSoonCount, expiredCount] = await Promise.all([
     this.countDocuments({ userId, isConsumed: false }),
     this.countDocuments({ userId, isConsumed: true }),
-    this.getExpiringSoon(userId, 3),
-    this.getExpired(userId)
+    this.countDocuments({
+      userId,
+      isConsumed: false,
+      expiryDate: { $ne: null, $lte: futureDate, $gte: new Date() }
+    }),
+    this.countDocuments({
+      userId,
+      isConsumed: false,
+      expiryDate: { $ne: null, $lt: new Date() }
+    })
   ]);
 
   return {
     totalActive,
     totalConsumed,
-    expiringSoonCount: expiringSoon.length,
-    expiredCount: expired.length,
+    expiringSoonCount,
+    expiredCount,
     totalScans: totalActive + totalConsumed
   };
 };
