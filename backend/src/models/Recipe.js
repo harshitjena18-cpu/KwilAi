@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { escapeRegExp } from '../utils/securityUtils.js';
 
 const recipeSchema = new mongoose.Schema({
   // Basic Info
@@ -333,7 +334,7 @@ recipeSchema.statics.searchByIngredients = function(ingredientNames, filters = {
   // Search for recipes containing any of the ingredients
   if (ingredientNames && ingredientNames.length > 0) {
     query['ingredients.name'] = { 
-      $in: ingredientNames.map(name => new RegExp(name, 'i')) 
+      $in: ingredientNames.map(name => new RegExp(escapeRegExp(name), 'i'))
     };
   }
 
