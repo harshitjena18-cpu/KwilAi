@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  */
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes', 'title image cookTime difficulty')
+    // Optimization: Removed .populate('savedRecipes') since the populated data is discarded by user.fullProfile
     .select('-password');
 
   res.status(200).json({
@@ -187,7 +187,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  */
 export const getUserStats = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
+    // Optimization: Removed .populate('savedRecipes') to avoid memory/db overhead just to get array length
     .select('-password');
 
   const stats = {
