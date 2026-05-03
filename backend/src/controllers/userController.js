@@ -186,8 +186,8 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // BOLT OPTIMIZATION: Avoided .populate('savedRecipes') to evaluate .length directly on unpopulated ObjectId array
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
