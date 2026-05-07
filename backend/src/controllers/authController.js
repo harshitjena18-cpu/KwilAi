@@ -15,7 +15,7 @@ export const register = asyncHandler(async (req, res) => {
   if (existingUser) {
     return res.status(400).json({
       success: false,
-      message: 'Email already registered. Please login or use a different email.'
+      message: 'Registration failed. Please check your details and try again.'
     });
   }
 
