@@ -1,0 +1,3 @@
+## 2026-05-12 - Replace iterative DB inserts with insertMany
+**Learning:** Iterating over an array and performing a database insert on each iteration creates an N+1 query problem, which degrades performance as the dataset size grows. Replacing iterative `.create()` calls inside loops with `.insertMany()` for batch data operations eliminates N+1 query patterns and improves database performance during bulk additions.
+**Action:** Use `.insertMany()` instead of iterative `.create()` calls within loops for batch data operations to eliminate N+1 query patterns and improve database performance during bulk additions.
