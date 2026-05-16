@@ -1,10 +1,10 @@
 
 > @figma/my-make-file@0.0.1 dev /app
-> vite --port 3000
+> vite
 
 
-  VITE v6.3.5  ready in 409 ms
+  VITE v6.3.5  ready in 522 ms
 
-  ➜  Local:   http://localhost:3000/
+  ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-4:16:59 PM [vite] (client) hmr update /src/app/components/kwil/KwilAuth.tsx, /src/styles/index.css
+ ELIFECYCLE  Command failed with exit code 143.
