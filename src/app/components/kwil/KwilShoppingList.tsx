@@ -280,7 +280,7 @@ export default function KwilShoppingList() {
                       exit={{ opacity: 0, x: 20 }}
                     >
                       <div
-                        className="p-4 rounded-2xl flex items-center gap-3 transition-all"
+                        className="group p-4 rounded-2xl flex items-center gap-3 transition-all"
                         style={{
                           background: item.checked 
                             ? 'rgba(0, 255, 156, 0.08)' 
@@ -341,8 +341,9 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label="Delete item"
                           onClick={() => deleteItem(item.id)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C]"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
