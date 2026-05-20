@@ -100,13 +100,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
-
-  for (const item of ingredients) {
+  // ⚡ Bolt: Replaced iterative .create() calls with .insertMany() to eliminate N+1 queries.
+  // This performs a single bulk operation, significantly reducing database overhead.
+  const itemsToInsert = ingredients.map(item => {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    return {
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -115,10 +115,10 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       imageUrl: imageUrl || item.imageUrl,
       detectionConfidence: item.confidence,
       notes: item.notes
-    });
+    };
+  });
 
-    pantryItems.push(pantryItem);
-  }
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
@@ -402,26 +402,26 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
-
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
 
-  for (const item of itemsToAdd) {
+  // ⚡ Bolt: Optimized batch insertion by switching from iterative .create() loop to .insertMany().
+  // This reduces N insertions to 1 bulk insertion, speeding up batch operations.
+  const itemsToInsert = itemsToAdd.map(item => {
     const category = visionService.categorizeIngredient(item.name);
     const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    return {
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: { value: null, unit: null },
       expiryDate,
       category,
       detectionConfidence: item.confidence
-    });
+    };
+  });
 
-    pantryItems.push(pantryItem);
-  }
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
