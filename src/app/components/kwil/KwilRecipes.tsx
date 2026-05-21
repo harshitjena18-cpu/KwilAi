@@ -164,6 +164,7 @@ export default function KwilRecipes() {
         <div className="flex items-center gap-4">
           {/* Back Button */}
           <motion.button
+            aria-label="Go back"
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
@@ -185,6 +186,7 @@ export default function KwilRecipes() {
 
           {/* Favorites Icon */}
           <motion.button
+            aria-label="Favorites"
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
