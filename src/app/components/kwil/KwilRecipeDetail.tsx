@@ -132,6 +132,7 @@ export default function KwilRecipeDetail() {
           <div className="flex items-center justify-between">
             {/* Back Button */}
             <motion.button
+              aria-label="Go back"
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{
                 background: 'rgba(0, 0, 0, 0.6)',
@@ -148,6 +149,7 @@ export default function KwilRecipeDetail() {
             {/* Action Buttons */}
             <div className="flex gap-2">
               <motion.button
+                aria-label="Toggle favorite"
                 onClick={() => setIsFavorite(!isFavorite)}
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
@@ -166,6 +168,7 @@ export default function KwilRecipeDetail() {
               </motion.button>
 
               <motion.button
+                aria-label="Share recipe"
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
                   background: 'rgba(0, 0, 0, 0.6)',
@@ -563,6 +566,7 @@ export default function KwilRecipeDetail() {
       >
         <div className="flex items-center gap-3">
           <motion.button
+            aria-label="Voice instructions"
             className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
             style={{
               background: 'rgba(0, 255, 156, 0.15)',
