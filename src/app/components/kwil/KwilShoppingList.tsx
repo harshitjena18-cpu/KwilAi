@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -64,14 +64,18 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  // Memoize heavy derived state calculations to prevent recalculation on every render
+  const categories = useMemo(() => ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'], []);
 
-  const completedCount = items.filter(i => i.checked).length;
-  const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+  const groupedItems = useMemo(() => {
+    return categories.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
+  }, [items, categories]);
+
+  const completedCount = useMemo(() => items.filter(i => i.checked).length, [items]);
+  const progress = useMemo(() => items.length > 0 ? (completedCount / items.length) * 100 : 0, [items, completedCount]);
 
   return (
     <div 
