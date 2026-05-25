@@ -132,7 +132,8 @@ export default function KwilRecipeDetail() {
           <div className="flex items-center justify-between">
             {/* Back Button */}
             <motion.button
-              className="w-10 h-10 rounded-full flex items-center justify-center"
+              className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C]"
+              aria-label="Go back"
               style={{
                 background: 'rgba(0, 0, 0, 0.6)',
                 backdropFilter: 'blur(10px)',
@@ -149,7 +150,8 @@ export default function KwilRecipeDetail() {
             <div className="flex gap-2">
               <motion.button
                 onClick={() => setIsFavorite(!isFavorite)}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
+                aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C]"
                 style={{
                   background: isFavorite ? 'rgba(255, 107, 107, 0.2)' : 'rgba(0, 0, 0, 0.6)',
                   backdropFilter: 'blur(10px)',
@@ -166,7 +168,8 @@ export default function KwilRecipeDetail() {
               </motion.button>
 
               <motion.button
-                className="w-10 h-10 rounded-full flex items-center justify-center"
+                className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C]"
+                aria-label="Share recipe"
                 style={{
                   background: 'rgba(0, 0, 0, 0.6)',
                   backdropFilter: 'blur(10px)',
@@ -563,7 +566,8 @@ export default function KwilRecipeDetail() {
       >
         <div className="flex items-center gap-3">
           <motion.button
-            className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+            className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF9C]"
+            aria-label="Voice assistant"
             style={{
               background: 'rgba(0, 255, 156, 0.15)',
               border: '2px solid rgba(0, 255, 156, 0.4)',
