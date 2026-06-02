@@ -7,8 +7,10 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  * @access  Private
  */
 export const getProfile = asyncHandler(async (req, res) => {
+  // ⚡ Bolt Performance Optimization:
+  // Removed .populate('savedRecipes') since the populated data is discarded by the fullProfile virtual.
+  // This saves a redundant database join and significantly improves response time.
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes', 'title image cookTime difficulty')
     .select('-password');
 
   res.status(200).json({
@@ -186,8 +188,11 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // ⚡ Bolt Performance Optimization:
+  // Removed .populate('savedRecipes') because we only need the array length.
+  // Mongoose arrays of ObjectIds maintain their length property even when unpopulated,
+  // saving an expensive and unnecessary database join.
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
