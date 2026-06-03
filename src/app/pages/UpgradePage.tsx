@@ -125,6 +125,7 @@ export default function UpgradePage() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => navigate(-1)}
+            aria-label="Go back"
           >
             <ArrowLeft size={20} className="text-white" />
           </motion.button>
