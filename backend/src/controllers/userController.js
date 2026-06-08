@@ -7,8 +7,9 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  * @access  Private
  */
 export const getProfile = asyncHandler(async (req, res) => {
+  // ⚡ Bolt Optimization: Removed expensive and unused .populate('savedRecipes')
+  // The 'fullProfile' virtual doesn't include 'savedRecipes', so the DB join was wasted.
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes', 'title image cookTime difficulty')
     .select('-password');
 
   res.status(200).json({
@@ -186,8 +187,9 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // ⚡ Bolt Optimization: Removed unnecessary .populate('savedRecipes')
+  // Mongoose maintains the .length property on arrays of ObjectIds, eliminating the need for a full DB join.
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
