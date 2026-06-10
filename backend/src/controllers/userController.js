@@ -187,7 +187,8 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  */
 export const getUserStats = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
+    // Removed .populate('savedRecipes') to avoid unnecessary database joins
+    // as only the array length is needed for stats.
     .select('-password');
 
   const stats = {
