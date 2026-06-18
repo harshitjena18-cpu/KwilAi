@@ -7,8 +7,9 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  * @access  Private
  */
 export const getProfile = asyncHandler(async (req, res) => {
+  // Optimization: Removed .populate('savedRecipes') as populated fields are
+  // discarded by fullProfile virtual property in the response
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes', 'title image cookTime difficulty')
     .select('-password');
 
   res.status(200).json({
@@ -186,8 +187,9 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getUserStats = asyncHandler(async (req, res) => {
+  // Optimization: Removed .populate('savedRecipes') as only the array length
+  // is needed for statistics, which can be accessed from ObjectIds array
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
     .select('-password');
 
   const stats = {
