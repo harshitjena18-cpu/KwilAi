@@ -117,6 +117,7 @@ export default function UpgradePage() {
       <div className="relative z-10 px-6 pt-16 pb-4">
         <div className="flex items-center gap-4">
           <motion.button
+            aria-label="Go back"
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
