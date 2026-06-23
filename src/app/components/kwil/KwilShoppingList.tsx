@@ -294,6 +294,9 @@ export default function KwilShoppingList() {
                       >
                         {/* Checkbox */}
                         <button
+                          role="checkbox"
+                          aria-checked={item.checked}
+                          aria-label={`Mark ${item.name} as ${item.checked ? 'uncompleted' : 'completed'}`}
                           onClick={() => toggleItem(item.id)}
                           className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
                           style={{
@@ -341,6 +344,7 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label="Delete item"
                           onClick={() => deleteItem(item.id)}
                           className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
                           style={{
