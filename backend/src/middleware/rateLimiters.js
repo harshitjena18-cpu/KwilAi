@@ -1,6 +1,22 @@
 import rateLimit from 'express-rate-limit';
 
 /**
+ * Rate limiter for registration endpoint
+ * Limits account creation to prevent spam and abuse
+ * Max 5 attempts per hour per IP
+ */
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 registration requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many accounts created from this IP, please try again after an hour'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
  * Rate limiter for login endpoint
  * Limits login attempts to prevent brute-force attacks
  * Max 5 attempts per 15 minutes per IP
