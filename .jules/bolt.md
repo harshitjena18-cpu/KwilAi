@@ -1,0 +1,3 @@
+## 2024-06-24 - React useMemo Optimization
+**Learning:** When using `useMemo` in React components, defining constant reference arrays (like `categories = ["a", "b"]`) inside the component triggers `react-hooks/exhaustive-deps` warnings if they are used within the memoized block but omitted from the dependency array. Adding them to the array causes unnecessary recalculations because their reference changes on every render.
+**Action:** Always move static, constant variables and arrays completely outside the component definition to make them globally static. This prevents exhaustive-deps warnings and ensures the memoization optimization functions correctly.
