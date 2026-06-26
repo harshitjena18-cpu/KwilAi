@@ -132,6 +132,7 @@ export default function KwilRecipeDetail() {
           <div className="flex items-center justify-between">
             {/* Back Button */}
             <motion.button
+              aria-label="Back"
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{
                 background: 'rgba(0, 0, 0, 0.6)',
@@ -148,6 +149,8 @@ export default function KwilRecipeDetail() {
             {/* Action Buttons */}
             <div className="flex gap-2">
               <motion.button
+                aria-label="Toggle Favorite"
+                aria-pressed={isFavorite}
                 onClick={() => setIsFavorite(!isFavorite)}
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
@@ -166,6 +169,7 @@ export default function KwilRecipeDetail() {
               </motion.button>
 
               <motion.button
+                aria-label="Share"
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{
                   background: 'rgba(0, 0, 0, 0.6)',
@@ -303,6 +307,8 @@ export default function KwilRecipeDetail() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <button
+                    role="checkbox"
+                    aria-checked={ingredient.checked}
                     onClick={() => toggleIngredient(ingredient.id)}
                     className="w-full rounded-2xl p-4 flex items-center gap-3 transition-all"
                     style={{
@@ -403,6 +409,8 @@ export default function KwilRecipeDetail() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <button
+                    role="checkbox"
+                    aria-checked={step.completed}
                     onClick={() => toggleStep(step.id)}
                     className="w-full rounded-2xl p-4 text-left transition-all"
                     style={{
@@ -563,6 +571,7 @@ export default function KwilRecipeDetail() {
       >
         <div className="flex items-center gap-3">
           <motion.button
+            aria-label="Voice command"
             className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
             style={{
               background: 'rgba(0, 255, 156, 0.15)',
