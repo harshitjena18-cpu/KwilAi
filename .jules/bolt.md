@@ -1,0 +1,3 @@
+## 2026-06-30 - Unnecessary Mongoose Populates
+**Learning:** Found that using `.populate()` is an expensive operation (database join) that is entirely wasted if the populated fields are discarded by a virtual property (like `fullProfile`) or if only the array's `.length` is needed (since unpopulated ObjectId arrays retain their length in Mongoose).
+**Action:** Always verify if populated fields are actually utilized in the response or business logic. Remove `.populate()` calls when only an array count is needed or when the field is excluded from the final response payload to prevent N+1 query problems and over-fetching.
