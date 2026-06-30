@@ -303,6 +303,9 @@ export default function KwilRecipeDetail() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <button
+                    role="checkbox"
+                    aria-checked={ingredient.checked}
+                    aria-label="Toggle ingredient"
                     onClick={() => toggleIngredient(ingredient.id)}
                     className="w-full rounded-2xl p-4 flex items-center gap-3 transition-all"
                     style={{
@@ -403,6 +406,9 @@ export default function KwilRecipeDetail() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <button
+                    role="checkbox"
+                    aria-checked={step.completed}
+                    aria-label="Toggle step"
                     onClick={() => toggleStep(step.id)}
                     className="w-full rounded-2xl p-4 text-left transition-all"
                     style={{
