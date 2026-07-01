@@ -25,100 +25,101 @@ interface Recipe {
   isFavorite?: boolean;
 }
 
+// ⚡ Bolt: Moved static filters and recipes arrays outside of the component to prevent recreating them on every render.
+const filters = [
+  { id: 'high-protein', label: 'High Protein', icon: <Apple size={14} /> },
+  { id: 'low-cal', label: 'Low Cal', icon: <Flame size={14} /> },
+  { id: 'veg', label: 'Veg', icon: <Apple size={14} /> },
+  { id: 'fast', label: 'Fast', icon: <Clock size={14} /> },
+];
+
+const recipes: Recipe[] = [
+  {
+    id: '1',
+    name: 'Protein Power Bowl',
+    image: '🥗',
+    rating: 4.8,
+    time: '15 min',
+    calories: 450,
+    protein: 35,
+    category: 'High Protein',
+  },
+  {
+    id: '2',
+    name: 'Grilled Chicken Salad',
+    image: '🥙',
+    rating: 4.9,
+    time: '20 min',
+    calories: 380,
+    protein: 42,
+    category: 'High Protein',
+  },
+  {
+    id: '3',
+    name: 'Veggie Stir Fry',
+    image: '🥘',
+    rating: 4.7,
+    time: '12 min',
+    calories: 280,
+    protein: 12,
+    category: 'Vegan',
+  },
+  {
+    id: '4',
+    name: 'Quinoa Buddha Bowl',
+    image: '🍲',
+    rating: 4.6,
+    time: '18 min',
+    calories: 350,
+    protein: 18,
+    category: 'Vegan',
+  },
+  {
+    id: '5',
+    name: 'Salmon & Avocado',
+    image: '🍣',
+    rating: 4.9,
+    time: '25 min',
+    calories: 520,
+    protein: 38,
+    category: 'High Protein',
+    isFavorite: true,
+  },
+  {
+    id: '6',
+    name: 'Greek Yogurt Parfait',
+    image: '🥤',
+    rating: 4.5,
+    time: '5 min',
+    calories: 220,
+    protein: 20,
+    category: 'Quick',
+  },
+  {
+    id: '7',
+    name: 'Turkey Wrap',
+    image: '🌯',
+    rating: 4.7,
+    time: '10 min',
+    calories: 340,
+    protein: 28,
+    category: 'Quick',
+  },
+  {
+    id: '8',
+    name: 'Egg White Omelette',
+    image: '🍳',
+    rating: 4.8,
+    time: '8 min',
+    calories: 180,
+    protein: 24,
+    category: 'Low Cal',
+  },
+];
+
 export default function KwilRecipes() {
   const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState<string[]>(['high-protein']);
-
-  const filters = [
-    { id: 'high-protein', label: 'High Protein', icon: <Apple size={14} /> },
-    { id: 'low-cal', label: 'Low Cal', icon: <Flame size={14} /> },
-    { id: 'veg', label: 'Veg', icon: <Apple size={14} /> },
-    { id: 'fast', label: 'Fast', icon: <Clock size={14} /> },
-  ];
-
-  const recipes: Recipe[] = [
-    {
-      id: '1',
-      name: 'Protein Power Bowl',
-      image: '🥗',
-      rating: 4.8,
-      time: '15 min',
-      calories: 450,
-      protein: 35,
-      category: 'High Protein',
-    },
-    {
-      id: '2',
-      name: 'Grilled Chicken Salad',
-      image: '🥙',
-      rating: 4.9,
-      time: '20 min',
-      calories: 380,
-      protein: 42,
-      category: 'High Protein',
-    },
-    {
-      id: '3',
-      name: 'Veggie Stir Fry',
-      image: '🥘',
-      rating: 4.7,
-      time: '12 min',
-      calories: 280,
-      protein: 12,
-      category: 'Vegan',
-    },
-    {
-      id: '4',
-      name: 'Quinoa Buddha Bowl',
-      image: '🍲',
-      rating: 4.6,
-      time: '18 min',
-      calories: 350,
-      protein: 18,
-      category: 'Vegan',
-    },
-    {
-      id: '5',
-      name: 'Salmon & Avocado',
-      image: '🍣',
-      rating: 4.9,
-      time: '25 min',
-      calories: 520,
-      protein: 38,
-      category: 'High Protein',
-      isFavorite: true,
-    },
-    {
-      id: '6',
-      name: 'Greek Yogurt Parfait',
-      image: '🥤',
-      rating: 4.5,
-      time: '5 min',
-      calories: 220,
-      protein: 20,
-      category: 'Quick',
-    },
-    {
-      id: '7',
-      name: 'Turkey Wrap',
-      image: '🌯',
-      rating: 4.7,
-      time: '10 min',
-      calories: 340,
-      protein: 28,
-      category: 'Quick',
-    },
-    {
-      id: '8',
-      name: 'Egg White Omelette',
-      image: '🍳',
-      rating: 4.8,
-      time: '8 min',
-      calories: 180,
-      protein: 24,
-      category: 'Low Cal',
-    },
-  ];
 
   const toggleFilter = (filterId: string) => {
     setSelectedFilters(prev => 
