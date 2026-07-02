@@ -33,6 +33,46 @@ interface RecipeCard {
   category: string;
 }
 
+// ⚡ Bolt Optimization: Moved static quickActions outside component to prevent recreation on render
+const STATIC_QUICK_ACTIONS = [
+  { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
+  { id: 'diet', label: 'Diet', icon: <Apple size={18} />, color: '#00FF9C' },
+  { id: 'budget', label: 'Budget', icon: <IndianRupee size={18} />, color: '#FFD93D' },
+  { id: 'quick', label: 'Quick', icon: <Zap size={18} />, color: '#6BCF7F' },
+  { id: 'healthy', label: 'Healthy', icon: <Heart size={18} />, color: '#FF9CEE' },
+];
+
+// ⚡ Bolt Optimization: Moved static recommendedRecipes outside component to prevent recreation on render
+const STATIC_RECOMMENDED_RECIPES: RecipeCard[] = [
+  {
+    id: '1',
+    name: 'Protein Power Bowl',
+    image: '\u{1F957}',
+    cookTime: '15 min',
+    calories: '450 kcal',
+    difficulty: 'Easy',
+    category: 'High Protein'
+  },
+  {
+    id: '2',
+    name: 'Keto Avocado Toast',
+    image: '\u{1F951}',
+    cookTime: '10 min',
+    calories: '320 kcal',
+    difficulty: 'Easy',
+    category: 'Keto'
+  },
+  {
+    id: '3',
+    name: 'Muscle Gain Smoothie',
+    image: '\u{1F964}',
+    cookTime: '5 min',
+    calories: '550 kcal',
+    difficulty: 'Easy',
+    category: 'Muscle Gain'
+  },
+];
+
 export default function KwilDashboard() {
   const navigate = useNavigate();
   const [todaySummary, setTodaySummary] = useState<DailySummary | null>(null);
@@ -62,44 +102,6 @@ export default function KwilDashboard() {
   const calPct = calGoal > 0 ? Math.min((todayCal / calGoal) * 100, 100) : 0;
   const proteinPct = proteinGoal > 0 ? Math.min((todayProtein / proteinGoal) * 100, 100) : 0;
   const isPro = planSummary?.plan === 'pro';
-
-  const quickActions = [
-    { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
-    { id: 'diet', label: 'Diet', icon: <Apple size={18} />, color: '#00FF9C' },
-    { id: 'budget', label: 'Budget', icon: <IndianRupee size={18} />, color: '#FFD93D' },
-    { id: 'quick', label: 'Quick', icon: <Zap size={18} />, color: '#6BCF7F' },
-    { id: 'healthy', label: 'Healthy', icon: <Heart size={18} />, color: '#FF9CEE' },
-  ];
-
-  const recommendedRecipes: RecipeCard[] = [
-    {
-      id: '1',
-      name: 'Protein Power Bowl',
-      image: '\u{1F957}',
-      cookTime: '15 min',
-      calories: '450 kcal',
-      difficulty: 'Easy',
-      category: 'High Protein'
-    },
-    {
-      id: '2',
-      name: 'Keto Avocado Toast',
-      image: '\u{1F951}',
-      cookTime: '10 min',
-      calories: '320 kcal',
-      difficulty: 'Easy',
-      category: 'Keto'
-    },
-    {
-      id: '3',
-      name: 'Muscle Gain Smoothie',
-      image: '\u{1F964}',
-      cookTime: '5 min',
-      calories: '550 kcal',
-      difficulty: 'Easy',
-      category: 'Muscle Gain'
-    },
-  ];
 
   return (
     <div 
@@ -394,7 +396,7 @@ export default function KwilDashboard() {
           >
             <h4 className="text-white font-medium">Quick Actions</h4>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6">
-              {quickActions.map((action, index) => (
+              {STATIC_QUICK_ACTIONS.map((action, index) => (
                 <motion.button
                   key={action.id}
                   className="flex-shrink-0 flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[80px]"
@@ -445,7 +447,7 @@ export default function KwilDashboard() {
 
             {/* Horizontal Recipe Cards */}
             <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6">
-              {recommendedRecipes.map((recipe, index) => (
+              {STATIC_RECOMMENDED_RECIPES.map((recipe, index) => (
                 <motion.div
                   key={recipe.id}
                   className="flex-shrink-0 rounded-2xl overflow-hidden relative"
