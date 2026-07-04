@@ -1,0 +1,3 @@
+## 2026-07-04 - Unnecessary Populates with Virtuals
+**Learning:** Mongoose virtual properties do not automatically include fields populated at the controller level. Populating large relational fields (like user favorites) when the returned virtual doesn't map them creates a hidden, expensive database join. Additionally, populating arrays when only their length is needed is unnecessary as Mongoose unpopulated arrays inherently retain their correct length.
+**Action:** Always verify if a `.populate()` result is actually utilized by the client payload or virtual property before leaving it in the controller, especially on frequently hit profile or stats endpoints.
