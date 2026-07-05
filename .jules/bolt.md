@@ -1,0 +1,3 @@
+## 2026-02-15 - Keystroke Lag from Co-located Expensive Filter Maps
+**Learning:** When a controlled input (like an 'Add Item' text field) is co-located in a component with an expensive array mapping and filtering computation, every keystroke triggers a full re-render that recalculates the array. Static arrays inside the render body also get re-allocated.
+**Action:** Always hoist static categorization arrays outside the component definition, and heavily memoize array map/filter aggregations (e.g., `groupedItems`) using `useMemo` if they only depend on a list state but share a component with a rapidly updating string state.
