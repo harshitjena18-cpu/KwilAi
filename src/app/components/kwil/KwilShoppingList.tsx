@@ -93,6 +93,7 @@ export default function KwilShoppingList() {
       <div className="relative z-10 px-6 pt-16 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button 
+            aria-label="Go back"
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
             style={{
@@ -219,6 +220,7 @@ export default function KwilShoppingList() {
                     className="flex-1 bg-transparent text-white placeholder-[#A0A0A0] outline-none"
                   />
                   <button
+                    aria-label="Confirm add item"
                     onClick={addItem}
                     className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{
@@ -294,6 +296,7 @@ export default function KwilShoppingList() {
                       >
                         {/* Checkbox */}
                         <button
+                          aria-label={item.checked ? "Mark as uncompleted" : "Mark as completed"}
                           onClick={() => toggleItem(item.id)}
                           className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
                           style={{
@@ -341,6 +344,7 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label="Delete item"
                           onClick={() => deleteItem(item.id)}
                           className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
                           style={{
