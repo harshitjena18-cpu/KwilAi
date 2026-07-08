@@ -20,6 +20,23 @@ import { getPlanSummary, type UsageSummary } from '../../services/planService';
 
 const DEMO_USER_ID = 'demo-user-001';
 
+// ⚡ Bolt Optimization: Moved static arrays outside component to prevent recreation on every render
+const freeFeatures = [
+  { label: '5 scans per day', icon: <Camera size={16} /> },
+  { label: '5 AI recipes per day', icon: <Sparkles size={16} /> },
+  { label: 'Basic nutrition tracking', icon: <TrendingUp size={16} /> },
+  { label: 'Recipe browsing', icon: <ChefHat size={16} /> },
+];
+
+const proFeatures = [
+  { label: 'Unlimited scans', icon: <Camera size={16} /> },
+  { label: 'Unlimited AI recipes', icon: <Sparkles size={16} /> },
+  { label: 'Advanced nutrition insights', icon: <TrendingUp size={16} /> },
+  { label: 'Priority API access', icon: <Zap size={16} /> },
+  { label: 'Voice assistant premium', icon: <Star size={16} /> },
+  { label: 'Ad-free experience', icon: <Shield size={16} /> },
+];
+
 export default function UpgradePage() {
   const navigate = useNavigate();
   const [planSummary, setPlanSummary] = useState<UsageSummary | null>(null);
@@ -61,22 +78,6 @@ export default function UpgradePage() {
   };
 
   const isPro = planSummary?.plan === 'pro';
-
-  const freeFeatures = [
-    { label: '5 scans per day', icon: <Camera size={16} /> },
-    { label: '5 AI recipes per day', icon: <Sparkles size={16} /> },
-    { label: 'Basic nutrition tracking', icon: <TrendingUp size={16} /> },
-    { label: 'Recipe browsing', icon: <ChefHat size={16} /> },
-  ];
-
-  const proFeatures = [
-    { label: 'Unlimited scans', icon: <Camera size={16} /> },
-    { label: 'Unlimited AI recipes', icon: <Sparkles size={16} /> },
-    { label: 'Advanced nutrition insights', icon: <TrendingUp size={16} /> },
-    { label: 'Priority API access', icon: <Zap size={16} /> },
-    { label: 'Voice assistant premium', icon: <Star size={16} /> },
-    { label: 'Ad-free experience', icon: <Shield size={16} /> },
-  ];
 
   if (loading) {
     return (
