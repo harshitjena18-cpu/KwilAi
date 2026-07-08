@@ -159,6 +159,11 @@ export default function KwilShoppingList() {
         >
           <div 
             className="h-2 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Shopping list progress"
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
             }}
