@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -22,6 +22,9 @@ interface ShoppingItem {
   checked: boolean;
   fromRecipe?: string;
 }
+
+// ⚡ Bolt Optimization: Moved constant array outside component to prevent recreation on every render
+const CATEGORIES = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
 
 export default function KwilShoppingList() {
   const navigate = useNavigate();
@@ -64,14 +67,20 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  // ⚡ Bolt Optimization: Memoize expensive array grouping to prevent recalculation on every keystroke when typing newItem
+  const groupedItems = useMemo(() => {
+    return CATEGORIES.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
+  }, [items]);
 
-  const completedCount = items.filter(i => i.checked).length;
-  const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+  // ⚡ Bolt Optimization: Memoize progress stats to prevent recalculation during typing
+  const { completedCount, progress } = useMemo(() => {
+    const count = items.filter(i => i.checked).length;
+    const prog = items.length > 0 ? (count / items.length) * 100 : 0;
+    return { completedCount: count, progress: prog };
+  }, [items]);
 
   return (
     <div 
