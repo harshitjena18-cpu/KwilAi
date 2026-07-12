@@ -547,6 +547,10 @@ export default function KwilDashboard() {
                   <div 
                     className="h-2 rounded-full overflow-hidden"
                     style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+                    role="progressbar"
+                    aria-valuenow={todayCal}
+                    aria-valuemin={0}
+                    aria-valuemax={calGoal}
                   >
                     <motion.div 
                       className="h-full rounded-full"
@@ -575,6 +579,10 @@ export default function KwilDashboard() {
                   <div 
                     className="h-2 rounded-full overflow-hidden"
                     style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+                    role="progressbar"
+                    aria-valuenow={todayProtein}
+                    aria-valuemin={0}
+                    aria-valuemax={proteinGoal}
                   >
                     <motion.div 
                       className="h-full rounded-full"
