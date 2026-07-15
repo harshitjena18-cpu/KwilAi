@@ -245,14 +245,25 @@ class RecipeService {
   filterRecipes(recipes, filters) {
     const { dietType, healthGoal, budget, maxCalories, minProtein } = filters;
 
+    // ⚡ Bolt Optimization: Normalize filter strings and create maps outside the loop
+    const normalizedDietType = dietType?.toLowerCase();
+    const normalizedHealthGoal = healthGoal?.toLowerCase();
+    const normalizedBudget = budget?.toLowerCase();
+    const budgetMap = {
+      'low': 300,      // $3
+      'medium': 600,   // $6
+      'high': 1000     // $10
+    };
+    const maxPrice = normalizedBudget ? (budgetMap[normalizedBudget] || 600) : 600;
+
     return recipes.filter(recipe => {
       // Diet filter
-      if (dietType && recipe.diets && !recipe.diets.includes(dietType.toLowerCase())) {
+      if (normalizedDietType && recipe.diets && !recipe.diets.includes(normalizedDietType)) {
         return false;
       }
 
       // Health goal filter
-      if (healthGoal && recipe.healthGoals && !recipe.healthGoals.includes(healthGoal.toLowerCase())) {
+      if (normalizedHealthGoal && recipe.healthGoals && !recipe.healthGoals.includes(normalizedHealthGoal)) {
         // Be flexible - if no specific health goals, check nutrition
         if (healthGoal === 'weight-loss' && recipe.nutrition?.calories) {
           const cals = recipe.nutrition.calories / (recipe.servings || 1);
@@ -264,13 +275,7 @@ class RecipeService {
       }
 
       // Budget filter (if price available)
-      if (budget && recipe.pricePerServing) {
-        const budgetMap = {
-          'low': 300,      // $3
-          'medium': 600,   // $6
-          'high': 1000     // $10
-        };
-        const maxPrice = budgetMap[budget.toLowerCase()] || 600;
+      if (normalizedBudget && recipe.pricePerServing) {
         if (recipe.pricePerServing > maxPrice) {
           return false;
         }
