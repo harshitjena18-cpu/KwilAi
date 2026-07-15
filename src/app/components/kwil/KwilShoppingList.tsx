@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
+
+// ⚡ Bolt Optimization: Moved constant array outside component to prevent recreation on re-renders
+const CATEGORIES = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -64,13 +67,16 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  // ⚡ Bolt Optimization: Memoized expensive array filtering and grouping to prevent lag during typing
+  const groupedItems = useMemo(() => {
+    return CATEGORIES.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
+  }, [items]);
 
-  const completedCount = items.filter(i => i.checked).length;
+  // ⚡ Bolt Optimization: Memoized completed count calculation
+  const completedCount = useMemo(() => items.filter(i => i.checked).length, [items]);
   const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
 
   return (
