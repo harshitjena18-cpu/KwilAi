@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 import { KwilButton } from './KwilButton';
 import { KwilCard } from './KwilCard';
+
+// ⚡ Bolt Optimization: Move static categories array outside the component
+const CATEGORIES = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
 
 interface ShoppingItem {
   id: string;
@@ -64,14 +67,20 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  // ⚡ Bolt Optimization: Memoize the groupedItems to avoid O(N*C) operations on every keystroke
+  const groupedItems = useMemo(() => {
+    return CATEGORIES.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
+  }, [items]);
 
-  const completedCount = items.filter(i => i.checked).length;
-  const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+  // ⚡ Bolt Optimization: Memoize completedCount and progress
+  const { completedCount, progress } = useMemo(() => {
+    const count = items.filter(i => i.checked).length;
+    const prog = items.length > 0 ? (count / items.length) * 100 : 0;
+    return { completedCount: count, progress: prog };
+  }, [items]);
 
   return (
     <div 
