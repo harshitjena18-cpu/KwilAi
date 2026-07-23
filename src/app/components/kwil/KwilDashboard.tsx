@@ -33,6 +33,45 @@ interface RecipeCard {
   category: string;
 }
 
+// ⚡ Bolt Optimization: Moved static arrays outside the component to prevent recreating them on every render, reducing memory allocation and garbage collection overhead.
+const quickActions = [
+  { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
+  { id: 'diet', label: 'Diet', icon: <Apple size={18} />, color: '#00FF9C' },
+  { id: 'budget', label: 'Budget', icon: <IndianRupee size={18} />, color: '#FFD93D' },
+  { id: 'quick', label: 'Quick', icon: <Zap size={18} />, color: '#6BCF7F' },
+  { id: 'healthy', label: 'Healthy', icon: <Heart size={18} />, color: '#FF9CEE' },
+];
+
+const recommendedRecipes: RecipeCard[] = [
+  {
+    id: '1',
+    name: 'Protein Power Bowl',
+    image: '\u{1F957}',
+    cookTime: '15 min',
+    calories: '450 kcal',
+    difficulty: 'Easy',
+    category: 'High Protein'
+  },
+  {
+    id: '2',
+    name: 'Keto Avocado Toast',
+    image: '\u{1F951}',
+    cookTime: '10 min',
+    calories: '320 kcal',
+    difficulty: 'Easy',
+    category: 'Keto'
+  },
+  {
+    id: '3',
+    name: 'Muscle Gain Smoothie',
+    image: '\u{1F964}',
+    cookTime: '5 min',
+    calories: '550 kcal',
+    difficulty: 'Easy',
+    category: 'Muscle Gain'
+  },
+];
+
 export default function KwilDashboard() {
   const navigate = useNavigate();
   const [todaySummary, setTodaySummary] = useState<DailySummary | null>(null);
@@ -62,44 +101,6 @@ export default function KwilDashboard() {
   const calPct = calGoal > 0 ? Math.min((todayCal / calGoal) * 100, 100) : 0;
   const proteinPct = proteinGoal > 0 ? Math.min((todayProtein / proteinGoal) * 100, 100) : 0;
   const isPro = planSummary?.plan === 'pro';
-
-  const quickActions = [
-    { id: 'protein', label: 'Protein', icon: <Flame size={18} />, color: '#FF6B6B' },
-    { id: 'diet', label: 'Diet', icon: <Apple size={18} />, color: '#00FF9C' },
-    { id: 'budget', label: 'Budget', icon: <IndianRupee size={18} />, color: '#FFD93D' },
-    { id: 'quick', label: 'Quick', icon: <Zap size={18} />, color: '#6BCF7F' },
-    { id: 'healthy', label: 'Healthy', icon: <Heart size={18} />, color: '#FF9CEE' },
-  ];
-
-  const recommendedRecipes: RecipeCard[] = [
-    {
-      id: '1',
-      name: 'Protein Power Bowl',
-      image: '\u{1F957}',
-      cookTime: '15 min',
-      calories: '450 kcal',
-      difficulty: 'Easy',
-      category: 'High Protein'
-    },
-    {
-      id: '2',
-      name: 'Keto Avocado Toast',
-      image: '\u{1F951}',
-      cookTime: '10 min',
-      calories: '320 kcal',
-      difficulty: 'Easy',
-      category: 'Keto'
-    },
-    {
-      id: '3',
-      name: 'Muscle Gain Smoothie',
-      image: '\u{1F964}',
-      cookTime: '5 min',
-      calories: '550 kcal',
-      difficulty: 'Easy',
-      category: 'Muscle Gain'
-    },
-  ];
 
   return (
     <div 
