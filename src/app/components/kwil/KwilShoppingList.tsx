@@ -94,6 +94,7 @@ export default function KwilShoppingList() {
         <div className="flex items-center justify-between mb-6">
           <button 
             onClick={() => navigate(-1)}
+            aria-label="Go back"
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
@@ -106,6 +107,7 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
+              aria-label="Share shopping list"
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -116,6 +118,7 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
+              aria-label="Download shopping list"
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -159,6 +162,10 @@ export default function KwilShoppingList() {
         >
           <div 
             className="h-2 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
             }}
@@ -295,6 +302,9 @@ export default function KwilShoppingList() {
                         {/* Checkbox */}
                         <button
                           onClick={() => toggleItem(item.id)}
+                          role="checkbox"
+                          aria-checked={item.checked}
+                          aria-label={`Mark ${item.name} as ${item.checked ? 'uncollected' : 'collected'}`}
                           className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
                           style={{
                             background: item.checked 
@@ -342,6 +352,7 @@ export default function KwilShoppingList() {
                         {/* Delete Button */}
                         <button
                           onClick={() => deleteItem(item.id)}
+                          aria-label={`Delete ${item.name}`}
                           className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
