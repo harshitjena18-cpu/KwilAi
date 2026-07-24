@@ -5,6 +5,18 @@ import rateLimit from 'express-rate-limit';
  * Limits login attempts to prevent brute-force attacks
  * Max 5 attempts per 15 minutes per IP
  */
+// 🛡️ Sentinel: Rate limiter for register endpoint to prevent spam account creation
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit each IP to 3 register requests per hour
+  message: {
+    success: false,
+    message: 'Too many accounts created from this IP, please try again after an hour'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 login requests per windowMs
