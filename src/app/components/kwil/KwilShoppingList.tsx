@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -22,6 +22,8 @@ interface ShoppingItem {
   checked: boolean;
   fromRecipe?: string;
 }
+
+const CATEGORIES = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
 
 export default function KwilShoppingList() {
   const navigate = useNavigate();
@@ -64,14 +66,36 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  const { groupedItems, completedCount, progress } = useMemo(() => {
+    // ⚡ Bolt Optimization: Group items in a single O(N) pass and prevent O(N*C) unnecessary array creations on every render
+    let completed = 0;
+    const groupsMap = new Map<string, ShoppingItem[]>();
 
-  const completedCount = items.filter(i => i.checked).length;
-  const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+    // Initialize map with known categories to preserve order
+    CATEGORIES.forEach(c => groupsMap.set(c, []));
+
+    items.forEach(item => {
+      if (item.checked) completed++;
+      const categoryList = groupsMap.get(item.category);
+      if (categoryList) {
+        categoryList.push(item);
+      } else {
+        groupsMap.set(item.category, [item]);
+      }
+    });
+
+    const grouped = Array.from(groupsMap.entries())
+      .map(([category, categoryItems]) => ({ category, items: categoryItems }))
+      .filter(group => group.items.length > 0);
+
+    const prog = items.length > 0 ? (completed / items.length) * 100 : 0;
+
+    return {
+      groupedItems: grouped,
+      completedCount: completed,
+      progress: prog
+    };
+  }, [items]);
 
   return (
     <div 
