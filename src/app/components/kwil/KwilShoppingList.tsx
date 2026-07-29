@@ -93,6 +93,7 @@ export default function KwilShoppingList() {
       <div className="relative z-10 px-6 pt-16 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button 
+            aria-label="Go back"
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
             style={{
@@ -106,6 +107,7 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
+              aria-label="Share shopping list"
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -116,6 +118,7 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
+              aria-label="Download shopping list"
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
