@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
  */
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes', 'title image cookTime difficulty')
+    // ⚡ Bolt: Removed .populate('savedRecipes') as it's omitted in fullProfile virtual, avoiding an expensive DB join
     .select('-password');
 
   res.status(200).json({
@@ -187,7 +187,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
  */
 export const getUserStats = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id)
-    .populate('savedRecipes')
+    // ⚡ Bolt: Removed .populate('savedRecipes') since we only need .length, avoiding an expensive DB join
     .select('-password');
 
   const stats = {
