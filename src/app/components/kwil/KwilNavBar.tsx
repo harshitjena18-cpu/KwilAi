@@ -61,7 +61,8 @@ export function KwilNavBar({
             <button
               key={item.id}
               onClick={() => handleItemClick(item.id)}
-              className="flex flex-col items-center gap-1 transition-all duration-300"
+              aria-label={item.label}
+              className="flex flex-col items-center gap-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none rounded-2xl"
             >
               <div className={`
                 p-3 rounded-2xl transition-all duration-300
