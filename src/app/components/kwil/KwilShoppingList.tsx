@@ -93,8 +93,9 @@ export default function KwilShoppingList() {
       <div className="relative z-10 px-6 pt-16 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button 
+            aria-label="Go back"
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(10px)',
@@ -106,7 +107,8 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Share shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -116,7 +118,8 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Download shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -341,8 +344,9 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label={`Delete ${item.name}`}
                           onClick={() => deleteItem(item.id)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
