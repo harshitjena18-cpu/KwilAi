@@ -102,9 +102,12 @@ export const getMe = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const logout = asyncHandler(async (req, res) => {
+  // 🛡️ Sentinel: Match secure/sameSite flags from cookie creation to ensure proper deletion and prevent CSRF/mixed-content issues during logout
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000), // 10 seconds
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
   });
 
   res.status(200).json({
