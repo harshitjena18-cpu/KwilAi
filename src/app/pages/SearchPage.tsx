@@ -4,37 +4,38 @@ import { Search, Filter, TrendingUp, Clock, Flame, Star, ChevronRight } from 'lu
 import { KwilInput, KwilChip, KwilCard } from '../components/kwil';
 import { useNavigate } from 'react-router';
 
+// ⚡ Bolt: Moved static arrays outside the component body to prevent unnecessary recreation on every render (e.g., when typing in the search box)
+const trendingSearches = [
+  'High protein meals',
+  'Quick breakfast',
+  'Vegan dinner',
+  'Meal prep ideas',
+];
+
+const filters = [
+  { id: 'vegan', label: 'Vegan' },
+  { id: 'quick', label: 'Quick (<30min)' },
+  { id: 'high-protein', label: 'High Protein' },
+  { id: 'low-carb', label: 'Low Carb' },
+  { id: 'gluten-free', label: 'Gluten Free' },
+];
+
+const recentSearches = [
+  { id: '1', query: 'Chicken salad', time: '2h ago' },
+  { id: '2', query: 'Protein smoothie', time: '1d ago' },
+  { id: '3', query: 'Buddha bowl', time: '2d ago' },
+];
+
+const suggestedRecipes = [
+  { id: '1', name: 'Grilled Chicken Power Salad', calories: 450, time: 20, rating: 4.9, emoji: '🥙' },
+  { id: '2', name: 'Protein Packed Smoothie Bowl', calories: 380, time: 10, rating: 4.8, emoji: '🥣' },
+  { id: '3', name: 'Asian Fusion Buddha Bowl', calories: 420, time: 25, rating: 4.7, emoji: '🍜' },
+];
+
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-
-  const trendingSearches = [
-    'High protein meals',
-    'Quick breakfast',
-    'Vegan dinner',
-    'Meal prep ideas',
-  ];
-
-  const filters = [
-    { id: 'vegan', label: 'Vegan' },
-    { id: 'quick', label: 'Quick (<30min)' },
-    { id: 'high-protein', label: 'High Protein' },
-    { id: 'low-carb', label: 'Low Carb' },
-    { id: 'gluten-free', label: 'Gluten Free' },
-  ];
-
-  const recentSearches = [
-    { id: '1', query: 'Chicken salad', time: '2h ago' },
-    { id: '2', query: 'Protein smoothie', time: '1d ago' },
-    { id: '3', query: 'Buddha bowl', time: '2d ago' },
-  ];
-
-  const suggestedRecipes = [
-    { id: '1', name: 'Grilled Chicken Power Salad', calories: 450, time: 20, rating: 4.9, emoji: '🥙' },
-    { id: '2', name: 'Protein Packed Smoothie Bowl', calories: 380, time: 10, rating: 4.8, emoji: '🥣' },
-    { id: '3', name: 'Asian Fusion Buddha Bowl', calories: 420, time: 25, rating: 4.7, emoji: '🍜' },
-  ];
 
   const toggleFilter = (filterId: string) => {
     setSelectedFilters(prev => 
