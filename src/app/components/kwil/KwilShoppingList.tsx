@@ -93,8 +93,9 @@ export default function KwilShoppingList() {
       <div className="relative z-10 px-6 pt-16 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button 
+            aria-label="Go back"
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(10px)',
@@ -106,7 +107,8 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Share list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -116,7 +118,8 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Download list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -219,8 +222,9 @@ export default function KwilShoppingList() {
                     className="flex-1 bg-transparent text-white placeholder-[#A0A0A0] outline-none"
                   />
                   <button
+                    aria-label="Add item"
                     onClick={addItem}
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
                     style={{
                       background: 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)',
                       boxShadow: '0 0 20px rgba(0, 255, 156, 0.4)',
@@ -294,8 +298,9 @@ export default function KwilShoppingList() {
                       >
                         {/* Checkbox */}
                         <button
+                          aria-label={item.checked ? "Mark as uncompleted" : "Mark as completed"}
                           onClick={() => toggleItem(item.id)}
-                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none"
                           style={{
                             background: item.checked 
                               ? 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)'
@@ -341,8 +346,9 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label="Delete item"
                           onClick={() => deleteItem(item.id)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:opacity-100"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
