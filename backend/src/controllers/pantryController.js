@@ -100,13 +100,13 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
-
-  for (const item of ingredients) {
+  // ⚡ Bolt: Replaced individual database inserts in a loop with a single bulk insert
+  // This reduces N database roundtrips to 1, significantly improving API response time
+  const itemsToInsert = ingredients.map(item => {
     const category = item.category || visionService.categorizeIngredient(item.name);
     const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
+    return {
       userId: req.user.id,
       ingredientName: item.name.trim().toLowerCase(),
       quantity: item.quantity || { value: null, unit: null },
@@ -115,10 +115,10 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
       imageUrl: imageUrl || item.imageUrl,
       detectionConfidence: item.confidence,
       notes: item.notes
-    });
+    };
+  });
 
-    pantryItems.push(pantryItem);
-  }
+  const pantryItems = await Pantry.insertMany(itemsToInsert);
 
   res.status(201).json({
     success: true,
