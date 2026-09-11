@@ -294,8 +294,9 @@ export default function KwilShoppingList() {
                       >
                         {/* Checkbox */}
                         <button
+                          aria-label={`Toggle ${item.name}`}
                           onClick={() => toggleItem(item.id)}
-                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
                           style={{
                             background: item.checked 
                               ? 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)'
@@ -341,8 +342,9 @@ export default function KwilShoppingList() {
 
                         {/* Delete Button */}
                         <button
+                          aria-label={`Delete ${item.name}`}
                           onClick={() => deleteItem(item.id)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
