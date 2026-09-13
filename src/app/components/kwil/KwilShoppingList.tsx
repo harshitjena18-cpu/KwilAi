@@ -94,7 +94,9 @@ export default function KwilShoppingList() {
         <div className="flex items-center justify-between mb-6">
           <button 
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            aria-label="Go back"
+            title="Go back"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(10px)',
@@ -106,7 +108,9 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Share shopping list"
+              title="Share shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -116,7 +120,9 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Download shopping list"
+              title="Download shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
