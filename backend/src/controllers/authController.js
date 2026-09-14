@@ -105,6 +105,9 @@ export const logout = asyncHandler(async (req, res) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000), // 10 seconds
     httpOnly: true,
+    // 🛡️ Sentinel: Match cookie deletion flags to creation flags to prevent insecure session management
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
   });
 
   res.status(200).json({
