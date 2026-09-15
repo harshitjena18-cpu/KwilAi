@@ -61,7 +61,8 @@ export function KwilNavBar({
             <button
               key={item.id}
               onClick={() => handleItemClick(item.id)}
-              className="flex flex-col items-center gap-1 transition-all duration-300"
+              aria-current={isActive ? 'page' : undefined}
+              className="flex flex-col items-center gap-1 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08] rounded-xl p-1"
             >
               <div className={`
                 p-3 rounded-2xl transition-all duration-300
