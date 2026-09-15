@@ -14,7 +14,8 @@ import {
   loginValidation,
   validate
 } from '../utils/validators.js';
-import { loginLimiter } from '../middleware/rateLimiters.js';
+// 🛡️ Sentinel: Import registerLimiter to use in authRoutes
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 
