@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -64,13 +64,17 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  const categories = useMemo(() => ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'], []);
 
-  const completedCount = items.filter(i => i.checked).length;
+  // ⚡ Bolt: Memoize expensive calculations that don't need to run on every render (e.g. typing)
+  const groupedItems = useMemo(() => {
+    return categories.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
+  }, [categories, items]);
+
+  const completedCount = useMemo(() => items.filter(i => i.checked).length, [items]);
   const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
 
   return (
