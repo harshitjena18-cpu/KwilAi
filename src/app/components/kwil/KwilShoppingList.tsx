@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { 
@@ -64,14 +64,20 @@ export default function KwilShoppingList() {
     }
   };
 
-  const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
-  const groupedItems = categories.map(category => ({
-    category,
-    items: items.filter(item => item.category === category),
-  })).filter(group => group.items.length > 0);
+  // ⚡ BOLT OPTIMIZATION: Memoize derived state to prevent O(N) re-calculation
+  // on every keystroke when typing in the 'Add new item' input.
+  const { groupedItems, completedCount, progress } = useMemo(() => {
+    const categories = ['Dairy', 'Vegetables', 'Spices', 'Grains', 'Other'];
+    const grouped = categories.map(category => ({
+      category,
+      items: items.filter(item => item.category === category),
+    })).filter(group => group.items.length > 0);
 
-  const completedCount = items.filter(i => i.checked).length;
-  const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
+    const count = items.filter(i => i.checked).length;
+    const prog = items.length > 0 ? (count / items.length) * 100 : 0;
+
+    return { groupedItems: grouped, completedCount: count, progress: prog };
+  }, [items]);
 
   return (
     <div 
