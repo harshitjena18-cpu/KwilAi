@@ -1,0 +1,3 @@
+## 2026-09-30 - Optimize batch inserts with Mongoose insertMany
+**Learning:** When adding multiple items from an array to the database sequentially using `await Model.create()` inside a `for...of` loop, it causes the "N+1 query problem" for writes, significantly impacting backend performance. Mapping the data into an array of objects synchronously first, and then using a single `await Model.insertMany()` avoids this bottleneck.
+**Action:** For bulk additions derived from arrays (like scanned ingredients), always prepare an array of objects first and execute a single `insertMany` operation instead of looping `create`.
