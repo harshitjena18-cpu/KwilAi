@@ -1,0 +1,3 @@
+## 2025-05-18 - Replacing N+1 queries with bulk operations
+**Learning:** Found an N+1 query in `addBatchIngredients` and `scanAndAddIngredient` in `pantryController.js` where multiple items were being inserted individually inside a for-loop. This performs a separate database insert operation for each ingredient, causing significant overhead for batches. The `Pantry` model does not use complex pre/post save hooks, meaning it is safe to use `Pantry.insertMany()` for bulk inserts.
+**Action:** Always look for iterative database operations, particularly `Model.create()` or `Model.save()` inside loops. Replace them with bulk operations like `Model.insertMany()` or `Model.bulkWrite()` when dealing with arrays of data to minimize database round trips and improve performance.
