@@ -14,7 +14,7 @@ import {
   loginValidation,
   validate
 } from '../utils/validators.js';
-import { loginLimiter } from '../middleware/rateLimiters.js';
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 
