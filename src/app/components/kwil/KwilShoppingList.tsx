@@ -100,6 +100,7 @@ export default function KwilShoppingList() {
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
+            aria-label="Go back"
           >
             <ArrowLeft size={20} className="text-white" />
           </button>
@@ -112,6 +113,7 @@ export default function KwilShoppingList() {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
+              aria-label="Share list"
             >
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
@@ -122,6 +124,7 @@ export default function KwilShoppingList() {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
+              aria-label="Download list"
             >
               <Download size={18} className="text-[#00FF9C]" />
             </button>
@@ -225,6 +228,7 @@ export default function KwilShoppingList() {
                       background: 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)',
                       boxShadow: '0 0 20px rgba(0, 255, 156, 0.4)',
                     }}
+                    aria-label="Confirm add item"
                   >
                     <Check size={20} className="text-[#050B08]" />
                   </button>
@@ -307,6 +311,7 @@ export default function KwilShoppingList() {
                               ? '0 0 15px rgba(0, 255, 156, 0.5)'
                               : 'none',
                           }}
+                          aria-label={item.checked ? `Mark ${item.name} as uncompleted` : `Mark ${item.name} as completed`}
                         >
                           {item.checked && (
                             <motion.div
@@ -347,6 +352,7 @@ export default function KwilShoppingList() {
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
                           }}
+                          aria-label={`Delete ${item.name}`}
                         >
                           <Trash2 size={14} className="text-red-400" />
                         </button>
