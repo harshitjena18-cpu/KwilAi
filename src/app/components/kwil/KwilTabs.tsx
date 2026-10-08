@@ -41,6 +41,7 @@ export function KwilTabs({
                 rounded-full
                 text-sm
                 transition-all duration-300
+                focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]
                 ${isActive 
                   ? 'bg-gradient-to-r from-[#00FF9C] to-[#10B981] text-[#050B08] shadow-[0_0_20px_rgba(0,255,156,0.4)]' 
                   : 'text-[#A0A0A0] hover:text-[#FFFFFF]'
