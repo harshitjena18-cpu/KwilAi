@@ -2,3 +2,7 @@
 **Vulnerability:** The `getSuggestions` endpoint crashed when `ingredients` query parameter was passed as an object (e.g., `?ingredients[foo]=bar`). The code assumed `ingredients` was a string or array of strings, but `express` query parser (via `qs`) parses `ingredients[foo]=bar` as `{ ingredients: { foo: 'bar' } }`. This caused `ingredients.split(',')` to throw `TypeError: ingredients.split is not a function`, leading to a 500 error and potential DoS if abused.
 **Learning:** Express `req.query` parsing is flexible and can return Objects where Strings are expected. `mongoSanitize` middleware only removes `$` and `.` keys but does not validate types. Input validation libraries like `express-validator` are essential not just for data format, but for strict type enforcement to prevent Type Confusion attacks.
 **Prevention:** Always validate the TYPE of input parameters before using them. Use `express-validator`'s `isString()` or custom validators to ensure query parameters are of the expected type.
+## 2026-10-10 - Rate Limiter Integration in authRoutes
+**Vulnerability:** A rate limiter middleware was configured but never applied to the endpoint it was meant to protect.
+**Learning:** Just configuring a middleware is not enough. You must actively import and apply it to the corresponding express route definitions. Failing to do so creates a false sense of security.
+**Prevention:** When adding or modifying a security middleware, explicitly trace the import and application of that middleware into the route definitions during code review and test thoroughly.
