@@ -1,0 +1,3 @@
+## 2026-10-11 - Array map with Mongoose insertMany vs sequential creates
+**Learning:** The Mongoose `insertMany` function can be used to batch insert documents, eliminating the N+1 query problem associated with iterative `create` calls inside a loop. This requires mapping over the array to transform items beforehand. Furthermore, in the case of the `Pantry` model, it lacks complex `pre/post save` hooks, meaning `insertMany` safely bypasses unnecessary middleware overhead without missing vital side effects.
+**Action:** When handling bulk inserts, check model hooks; if safe, use `insertMany` instead of looping over `create` to optimize database round trips.
