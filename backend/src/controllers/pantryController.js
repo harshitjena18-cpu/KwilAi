@@ -100,25 +100,24 @@ export const addBatchIngredients = asyncHandler(async (req, res) => {
     });
   }
 
-  const pantryItems = [];
+  // ⚡ Bolt Optimization: Batch database inserts to avoid N+1 query overhead
+  const pantryItems = await Pantry.insertMany(
+    ingredients.map(item => {
+      const category = item.category || visionService.categorizeIngredient(item.name);
+      const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
 
-  for (const item of ingredients) {
-    const category = item.category || visionService.categorizeIngredient(item.name);
-    const expiryDate = item.expiryDate || visionService.estimateExpiryDate(category);
-
-    const pantryItem = await Pantry.create({
-      userId: req.user.id,
-      ingredientName: item.name.trim().toLowerCase(),
-      quantity: item.quantity || { value: null, unit: null },
-      expiryDate,
-      category,
-      imageUrl: imageUrl || item.imageUrl,
-      detectionConfidence: item.confidence,
-      notes: item.notes
-    });
-
-    pantryItems.push(pantryItem);
-  }
+      return {
+        userId: req.user.id,
+        ingredientName: item.name.trim().toLowerCase(),
+        quantity: item.quantity || { value: null, unit: null },
+        expiryDate,
+        category,
+        imageUrl: imageUrl || item.imageUrl,
+        detectionConfidence: item.confidence,
+        notes: item.notes
+      };
+    })
+  );
 
   res.status(201).json({
     success: true,
@@ -402,26 +401,25 @@ export const scanAndAddIngredient = asyncHandler(async (req, res) => {
   }
 
   // Step 2: Add top detected ingredients to pantry
-  const pantryItems = [];
-
   // Add top 5 detected items (or all if less than 5)
   const itemsToAdd = detectedItems.slice(0, 5);
 
-  for (const item of itemsToAdd) {
-    const category = visionService.categorizeIngredient(item.name);
-    const expiryDate = visionService.estimateExpiryDate(category);
+  // ⚡ Bolt Optimization: Batch database inserts to avoid N+1 query overhead
+  const pantryItems = await Pantry.insertMany(
+    itemsToAdd.map(item => {
+      const category = visionService.categorizeIngredient(item.name);
+      const expiryDate = visionService.estimateExpiryDate(category);
 
-    const pantryItem = await Pantry.create({
-      userId: req.user.id,
-      ingredientName: item.name.trim().toLowerCase(),
-      quantity: { value: null, unit: null },
-      expiryDate,
-      category,
-      detectionConfidence: item.confidence
-    });
-
-    pantryItems.push(pantryItem);
-  }
+      return {
+        userId: req.user.id,
+        ingredientName: item.name.trim().toLowerCase(),
+        quantity: { value: null, unit: null },
+        expiryDate,
+        category,
+        detectionConfidence: item.confidence
+      };
+    })
+  );
 
   res.status(201).json({
     success: true,
