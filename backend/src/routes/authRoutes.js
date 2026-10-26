@@ -14,7 +14,7 @@ import {
   loginValidation,
   validate
 } from '../utils/validators.js';
-import { loginLimiter } from '../middleware/rateLimiters.js';
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ const router = express.Router();
 
 /**
  * @route   POST /api/auth/register
- * @desc    Register a new user
+ * @desc    Register a new user (with rate limiting)
  * @access  Public
  */
 router.post('/register', registerLimiter, registerValidation, validate, register);
