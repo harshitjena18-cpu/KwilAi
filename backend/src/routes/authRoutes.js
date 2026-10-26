@@ -14,7 +14,7 @@ import {
   loginValidation,
   validate
 } from '../utils/validators.js';
-import { loginLimiter } from '../middleware/rateLimiters.js';
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 
@@ -27,6 +27,7 @@ const router = express.Router();
  * @desc    Register a new user
  * @access  Public
  */
+// Added registerLimiter to prevent spam and abuse
 router.post('/register', registerLimiter, registerValidation, validate, register);
 
 /**
