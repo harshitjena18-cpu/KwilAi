@@ -164,7 +164,8 @@ export default function KwilRecipes() {
         <div className="flex items-center gap-4">
           {/* Back Button */}
           <motion.button
-            className="w-10 h-10 rounded-full flex items-center justify-center"
+            aria-label="Go back"
+            className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(10px)',
@@ -185,7 +186,8 @@ export default function KwilRecipes() {
 
           {/* Favorites Icon */}
           <motion.button
-            className="w-10 h-10 rounded-full flex items-center justify-center"
+            aria-label="Favorites"
+            className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(10px)',
@@ -412,7 +414,8 @@ export default function KwilRecipes() {
         transition={{ delay: 0.8, type: 'spring', damping: 10 }}
       >
         <button
-          className="w-14 h-14 rounded-full flex items-center justify-center"
+          aria-label="Saved recipes"
+          className="w-14 h-14 rounded-full flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
           style={{
             background: 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)',
             boxShadow: '0 0 30px rgba(0, 255, 156, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3)',
