@@ -94,7 +94,8 @@ export default function KwilShoppingList() {
         <div className="flex items-center justify-between mb-6">
           <button 
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            aria-label="Go back"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(10px)',
@@ -106,7 +107,8 @@ export default function KwilShoppingList() {
 
           <div className="flex gap-2">
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Share shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -116,7 +118,8 @@ export default function KwilShoppingList() {
               <Share2 size={18} className="text-[#00FF9C]" />
             </button>
             <button 
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              aria-label="Download shopping list"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -220,7 +223,8 @@ export default function KwilShoppingList() {
                   />
                   <button
                     onClick={addItem}
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    aria-label="Confirm add item"
+                    className="w-10 h-10 rounded-full flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
                     style={{
                       background: 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)',
                       boxShadow: '0 0 20px rgba(0, 255, 156, 0.4)',
@@ -295,7 +299,8 @@ export default function KwilShoppingList() {
                         {/* Checkbox */}
                         <button
                           onClick={() => toggleItem(item.id)}
-                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+                          aria-label={item.checked ? `Mark ${item.name} as uncollected` : `Mark ${item.name} as collected`}
+                          className="w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-[#00FF9C] focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
                           style={{
                             background: item.checked 
                               ? 'linear-gradient(135deg, #00FF9C 0%, #10B981 100%)'
@@ -342,7 +347,8 @@ export default function KwilShoppingList() {
                         {/* Delete Button */}
                         <button
                           onClick={() => deleteItem(item.id)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                          aria-label={`Delete ${item.name}`}
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-[#050B08]"
                           style={{
                             background: 'rgba(255, 59, 48, 0.2)',
                             border: '1px solid rgba(255, 59, 48, 0.3)',
